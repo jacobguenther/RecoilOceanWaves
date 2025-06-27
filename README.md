@@ -40,7 +40,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 
 ### UI Improvements
 - [ ] Finish UI
-- [ ] Hookup change wave resolution
+- [X] Hookup change wave resolution
 - [ ] Fix Select/Option css
 - [ ] Fix Cascade button css
 - [ ] Sliders where applicable
