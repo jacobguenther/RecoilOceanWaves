@@ -76,7 +76,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] GPU culling of tiles
 
 ### MVP Features/Bug Squashing
-- [ ] Fix alpha blending between tiles(on the cameras local x and z axis)
+- [ ] Fix alpha blending between tiles [#1](/../../issues/1)
 - [ ] Reduce foam with distance from camera
 - [ ] Dampen displacement in shallow water
 - [ ] Fix Subsurface color
