@@ -1,0 +1,70 @@
+body {
+	width: 600px;
+	height: 100%;
+
+	overflow: hidden;
+
+	/* margin-top: 100px;
+	margin-left: auto; */
+
+	background-color: #00145a80;
+}
+#ocean_waves {
+
+}
+
+#applet_header {
+	background-color: black;
+}
+
+#cascades_tab {
+	background-color: black;
+	width: 800px;
+
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+}
+
+.enabled {
+	display: block;
+}
+.disabled {
+	display: none;
+}
+
+.flex-center-space {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+
+	justify-content: flex-start;
+	/* align-content: normal; */
+	/* align-items: left; */
+
+	row-gap: 0px;
+	column-gap: 0px;
+
+	width: 800px;
+}
+.flex-center-space > label {
+	width: 200px;
+}
+.flex-center-space > input {
+	max-width: 100px;
+	/* width: 100px; */
+}
+.flex-center-space > span {
+	/* min-width: 100px; */
+	width: 100px;
+}
+
+#wind_min_max {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	margin-left: 350px;
+}
+#wind_min_max * {
+	width: 75px;
+}
