@@ -15,6 +15,8 @@ You should have received a copy of the GNU Affero General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>. 
 ]]
 
+local pow = math.pow
+
 local GL_UNSIGNED_SHORT = GL.UNSIGNED_SHORT
 local GL_UNSIGNED_INT = GL.UNSIGNED_INT
 local GL_FLOAT = GL.FLOAT
@@ -82,6 +84,7 @@ function Clipmap:new(size, grid_size, lods)
 	vao:AttachInstanceBuffer(instance_vbo)
 
 	local primitive_mode = GL_TRIANGLES
+	-- primitive_mode = GL_LINES
 
 	local this = {
 		lod_info = lod_info,
@@ -176,20 +179,22 @@ function generate_clipmap_tile_instance_data(instance_data, scale, layer)
 end
 
 function generate_plane_vertices(size, grid_size)
-	local center_offset = size / 2
+	local center_offset = -size / 2
 	local step_size = size/grid_size
 	local vertices = {}
+	local y = center_offset
 	for y_i=0, grid_size do
-		local y = step_size*y_i - center_offset
+		local x = center_offset
 		for x_i=0, grid_size do
-			local x = step_size*x_i - center_offset
 			vertices[#vertices+1] = x
 			vertices[#vertices+1] = y
+			x = x+step_size
 		end
+		y = y+step_size
 	end
 	local vertex_count = (grid_size+1)*(grid_size+1)
 
-	local vbo = gl.GetVBO(GL_ARRAY_BUFFER, false)
+	local vbo = glGetVBO(GL_ARRAY_BUFFER, false)
 	vbo:Define(vertex_count, {
 		{id=0, name='coords', type=GL_FLOAT, size=2},
 	})
@@ -199,16 +204,17 @@ function generate_plane_vertices(size, grid_size)
 end
 
 function gerenate_plane_indices(indices, grid_size, lod)
-	local lod_step = math.pow(2, lod)
+	local lod_step = pow(2, lod)
 	local index_count = (grid_size/lod_step * grid_size/lod_step) * 6
-	index_count = 0
 
-	for row=0, grid_size-lod_step, lod_step do
+	local end_vertex = grid_size-lod_step
+	local b_step = lod_step*grid_size
+	for row=0, end_vertex, lod_step do
 		local row_offset = row*(grid_size+1)
-		for col=0, grid_size-lod_step, lod_step do
-			local a = row_offset + col
+		for col=0, end_vertex, lod_step do
+			local a = row_offset+col
 			local b = a+lod_step
-			local c = b+lod_step*grid_size
+			local c = b+b_step
 			local d = c+lod_step
 			indices[#indices+1] = a
 			indices[#indices+1] = b
@@ -216,7 +222,6 @@ function gerenate_plane_indices(indices, grid_size, lod)
 			indices[#indices+1] = a
 			indices[#indices+1] = d
 			indices[#indices+1] = c
-			index_count = index_count+6
 		end
 	end
 	return index_count
@@ -233,28 +238,26 @@ function generate_clipmap_center_layer_indices(indices, grid_size, layer)
 	local col_start = row_start
 	local vertex_end = layer*2
 
-	local row = row_start
 	for y_i=1, vertex_end do
-		local row_offset = row*(grid_size+1)
-		local col = col_start
-		for x_i=1, vertex_end do
-			if (y_i==1 or y_i==vertex_end)
-				or (x_i==1 or x_i==vertex_end)
-			then
-				local a = row_offset + col
-				local b = a+1
-				local c = b+grid_size
-				local d = c+1
-				indices[#indices+1] = a
-				indices[#indices+1] = b
-				indices[#indices+1] = d
-				indices[#indices+1] = a
-				indices[#indices+1] = d
-				indices[#indices+1] = c
-			end
-			col = col + 1
+		local x_step = 1
+		if y_i~=1 and y_i~=vertex_end then
+			x_step = vertex_end-1
 		end
-		row = row + 1
+		local row_offset = (row_start+y_i-1)*(grid_size+1)
+		local col = col_start
+		for x_i=1, vertex_end, x_step do
+			local a = row_offset + col
+			local b = a+1
+			local c = b+grid_size
+			local d = c+1
+			indices[#indices+1] = a
+			indices[#indices+1] = b
+			indices[#indices+1] = d
+			indices[#indices+1] = a
+			indices[#indices+1] = d
+			indices[#indices+1] = c
+			col = col + x_step
+		end
 	end
 end
 
