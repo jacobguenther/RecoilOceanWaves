@@ -177,7 +177,7 @@ local normal_map
 local Clip = VFS.Include('LuaUI/Widgets/utilities/gl/clipmap.lua')
 local clipmap
 local mesh_size = 1024
-local mesh_grid_count = 512
+local mesh_grid_count = 1024
 
 local update_butterfly = true
 local update_spectrum = true
@@ -191,7 +191,7 @@ local map_size_z = Game.mapSizeZ
 
 local default_material = {
 	water_color =      {r = 0.10, g = 0.15, b = 0.18},
-	alpha = 0.25,
+	alpha = 0.35,
 
 	foam_color =       {r = 0.73, g = 0.67, b = 0.62},
 	foam_alpha = 0.7,
