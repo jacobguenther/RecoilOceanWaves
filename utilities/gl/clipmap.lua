@@ -147,7 +147,7 @@ function generate_clipmap_tile_instance_data(instance_data, scale, layer)
 	local corners = {}
 	for id=0,15 do
 		local rotation = 0
-		if id == 0 or id == 1 or id == 2 or id == 3 then -- top
+		if id<4 then -- top
 			rotation = 2
 		elseif id==7 or id==11 then -- right
 			rotation = 1
