@@ -1,11 +1,11 @@
 # Recoil Ocean Waves
 
-This is a port of [Godot Ocean Waves](https://github.com/2Retr0/GodotOceanWaves) to [Recoil Engine](https://github.com/beyond-all-reason/RecoilEngine) games such as [Beyond All Reason](https://github.com/beyond-all-reason/Beyond-All-Reason).
+This is a port of [Godot Ocean Waves](https://github.com/2Retr0/GodotOceanWaves) to [Recoil Engine](https://github.com/beyond-all-reason/RecoilEngine) games such as [Beyond All Reason](https://github.com/beyond-all-reason/Beyond-All-Reason), and [Zero-K](https://github.com/ZeroK-RTS/Zero-K).
 
 screenshot here
 
 ## Install
-* Open the install directory of your game(this can be done from the launcher)
+* Open the install directory of your game(this can be done from the launcher with BAR or from within Steam for Zero-K)
 * Navigate to LuaUI/Widgets
 	* if the Widgets folder does not exist then create it
 * Download the zip of this repository and put the contents of the zip archive in the Widgets folder
@@ -90,6 +90,8 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Unit Foam
 - [ ] Unit Wakes
 - [ ] Zero-K support
+	- [X] It runs!
+	- [ ] Add ui support (Chilli or wait for rmlui in Zero-K)
 - [ ] GL3 support?
 
 ## License
