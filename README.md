@@ -89,6 +89,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Building Foam
 - [ ] Unit Foam
 - [ ] Unit Wakes
+- [ ] Zero-K support
 - [ ] GL3 support?
 
 ## License
