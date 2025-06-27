@@ -42,13 +42,14 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Finish UI
 - [X] Hookup change wave resolution
 - [ ] Fix Select/Option css
-- [ ] Fix Cascade button css
+- [X] Fix Cascade button css
 - [ ] Sliders where applicable
 - [ ] Bound checking where applicable
 - [ ] Configurable displacement falloff
 - [ ] Mesh and LOD config
 - [ ] Add tooltips
 - [ ] Text command enable/disable ui
+- [X] Minimize/Close ui buttons
 
 ### Debug UI
 - [ ] disable displacement
