@@ -511,12 +511,28 @@ function widget:Reload(event)
 	widget:Initialize()
 end
 
--- function widget:GameFrame() end
-function widget:Update(dt)
-	time = time + dt
+function widget:GameFrame()
 	if is_bar then
 		ui_update_map_wind()
 	end
+end
+
+local chobbyInterface = false
+function widget:RecvLuaMsg(msg, playerID)
+	if msg:sub(1, 18) == 'LobbyOverlayActive' then
+		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
+		if is_bar then
+			if chobbyInterface then
+				ui.document:Hide()
+			else
+				ui.document:Show()
+			end
+		end
+	end
+end
+
+function widget:Update(dt)
+	time = time + dt
 end
 
 -- TODO only necessary barrier bits
