@@ -21,7 +21,7 @@ local rad_to_deg = math.deg
 function ui_minimize()
 	ui.dm_handle.should_minimize = not ui.dm_handle.should_minimize
 end
-function ui_hide()
+function ui_toggle_hidden()
 	if ui.dm_handle.hidden then
 		ui.dm_handle.hidden = false
 		ui.document:Hide()
@@ -162,7 +162,7 @@ function UI:init(data_model_cascades, material, wave_resolution)
 
 	local dm = {
 		ui_minimize = ui_minimize,
-		ui_hide = ui_hide,
+		ui_toggle_hidden = ui_toggle_hidden,
 		ui_change_wave_resolution = ui_change_wave_resolution,
 		ui_material_change = ui_material_change,
 		ui_select_cascade = ui_select_cascade,

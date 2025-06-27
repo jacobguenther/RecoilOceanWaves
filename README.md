@@ -48,7 +48,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Configurable displacement falloff
 - [ ] Mesh and LOD config
 - [ ] Add tooltips
-- [ ] Text command enable/disable ui
+- [X] Text command enable/disable ui
 - [X] Minimize/Close ui buttons
 
 ### Debug UI

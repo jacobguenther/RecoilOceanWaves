@@ -11,7 +11,7 @@
 	<handle move_target="#document">
 		<h1>Ocean Waves</h1>
 		<button data-event-click="ui_minimize()">_</button>
-		<button data-event-click="ui_hide()">X</button>
+		<button data-event-click="ui_toggle_hidden()">X</button>
 	</handle>
 	<div data-if="should_minimize > 0">
 		<div id="material">

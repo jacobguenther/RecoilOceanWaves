@@ -356,6 +356,15 @@ function widget:Initialize()
 	init_buffers()
 	init_shaders()
 end
+function widget:TextCommand(message)
+	local match = message:gmatch("%w+")
+	if match() == "oceanwaves" then
+		local command = match()
+		if command == "ui" and is_bar then
+			ui_toggle_hidden()
+		end
+	end
+end
 function init_pipeline_values()
 	num_fft_stages = log(wave_resolution) / log(2)
 	fft_size = wave_resolution*wave_resolution*4*2*#default_cascades
