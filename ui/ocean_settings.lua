@@ -18,6 +18,19 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 local atan2 = math.atan2
 local rad_to_deg = math.deg
 
+function ui_minimize()
+	ui.dm_handle.should_minimize = not ui.dm_handle.should_minimize
+end
+function ui_hide()
+	if ui.dm_handle.hidden then
+		ui.dm_handle.hidden = false
+		ui.document:Hide()
+	else
+		ui.dm_handle.hidden = true
+		ui.document:Show()
+	end
+end
+
 function ui_change_wave_resolution(event)
 	local value = tonumber(event.parameters.value)
 	if value == nil then
@@ -148,6 +161,8 @@ function UI:init(data_model_cascades, material, wave_resolution)
 	widget.rmlContext = RmlUi.CreateContext(context_name)
 
 	local dm = {
+		ui_minimize = ui_minimize,
+		ui_hide = ui_hide,
 		ui_change_wave_resolution = ui_change_wave_resolution,
 		ui_material_change = ui_material_change,
 		ui_select_cascade = ui_select_cascade,
@@ -178,6 +193,9 @@ function UI:init(data_model_cascades, material, wave_resolution)
 
 		selected_cascade = 1,
 		cascades = data_model_cascades,
+
+		should_minimize = 1,
+		hidden = 1,
 
 		material = material,
 	}

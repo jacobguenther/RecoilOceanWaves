@@ -1,27 +1,18 @@
 body {
 	width: 600px;
-	height: 100%;
+	height: auto;
 
 	overflow: hidden;
 
-	/* margin-top: 100px;
-	margin-left: auto; */
-
 	background-color: #00145af3;
 }
-handle h1 {
-	/* width: fit-content; */
-	padding-top: 20px;
-	padding-bottom: 20px;
-	padding-left: 0px;
-	padding-right: 0px;
 
-	margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: auto;
-	margin-right: auto;
+h1, h2, h3 {
+	/* top | right | bottom | left */
+	padding: 0px 0px 0px 4px;
+	margin: 0px;
 }
-h1 {
+handle, h1, #cascades_tab {
 	background-color: black;
 }
 h2 {
@@ -30,45 +21,37 @@ h2 {
 h3 {
 	background-color: #222;
 }
-h2, h3 {
-	padding-top: 0px;
-	padding-bottom: 0px;
-	margin-top: 0px;
-	margin-bottom: 0px;
+button {
+	padding-top: 6dp;
 }
 
 #ocean_waves {
+	padding-bottom: 4px;
+}
 
+handle {
+	display: flex;
+	width: 600px;
+	align-items: center;
+}
+handle h1 {
+	margin-right: auto;
+}
+handle button {
+	width: 50px;
 }
 
 #cascades_tab {
-	background-color: black;
-	width: 800px;
-
 	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
+	width: 600px;
+	align-items: center;
 }
-
-.enabled {
-	display: block;
-}
-.disabled {
-	display: none;
+#cascades_tab button {
+	width: 150px;
 }
 
 .flex-center-space {
 	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-
-	justify-content: flex-start;
-	/* align-content: normal; */
-	/* align-items: left; */
-
-	row-gap: 0px;
-	column-gap: 0px;
-
 	width: 800px;
 }
 .flex-center-space > label {
@@ -76,10 +59,8 @@ h2, h3 {
 }
 .flex-center-space > input {
 	max-width: 100px;
-	/* width: 100px; */
 }
 .flex-center-space > span {
-	/* min-width: 100px; */
 	width: 100px;
 }
 
