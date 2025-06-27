@@ -9,9 +9,7 @@
 <body>
 <div id="ocean_waves" data-model="ocean_waves_dm">
 	<handle move_target="#document">
-		<div id="applet_header">
-			<h1>Ocean Waves</h1>
-		</div>
+		<h1>Ocean Waves</h1>
 	</handle>
 
 	<div id="material">
@@ -66,6 +64,7 @@
 			<span id="map_wind_dir_z">z: {{map_wind_dir_z}}</span>
 			<span id="map_wind_angle">TODO &#x398; {{map_wind_angle}}</span>
 		</div>
+		<hr />
 		<div class="flex-center-space">
 			<label>Override Wind(TODO)</label>
 			<input type="checkbox" id="override_wind_checkbox" />

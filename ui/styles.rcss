@@ -7,14 +7,38 @@ body {
 	/* margin-top: 100px;
 	margin-left: auto; */
 
-	background-color: #00145a80;
+	background-color: #00145af3;
 }
+handle h1 {
+	/* width: fit-content; */
+	padding-top: 20px;
+	padding-bottom: 20px;
+	padding-left: 0px;
+	padding-right: 0px;
+
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: auto;
+	margin-right: auto;
+}
+h1 {
+	background-color: black;
+}
+h2 {
+	background-color: #111;
+}
+h3 {
+	background-color: #222;
+}
+h2, h3 {
+	padding-top: 0px;
+	padding-bottom: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
 #ocean_waves {
 
-}
-
-#applet_header {
-	background-color: black;
 }
 
 #cascades_tab {
