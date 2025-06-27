@@ -31,6 +31,28 @@ end
 * June 2025 Created
 ]]
 
+local game_name = Spring.GetGameName()
+local is_bar = game_name:find("^Beyond All Reason") ~= nil
+local is_zero_k = game_name:find("^Zero") ~= nil
+if not is_bar and not is_zero_k then
+	Spring.Echo("Game "..game_name.." is not supported")
+	return
+end
+
+local UI = nil
+ui = nil
+if is_bar then
+	UI = VFS.Include("LuaUI/Widgets/ui/ocean_settings.lua")
+end
+
+local LuaShader
+if is_bar then
+	LuaShader = gl.LuaShader
+elseif is_zero_k then
+	luaShaderDir = "LuaUI/Widgets/Include/"
+	LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
+end
+
 local G = 9.81
 local G2 = G*G
 
@@ -48,7 +70,6 @@ local GetGroundOrigHeight = Spring.GetGroundOrigHeight
 local GetWaterRendering = gl.GetWaterRendering
 local GetMapRendering = gl.GetMapRendering
 
-local LuaShader = gl.LuaShader
 local glCreateShader = gl.CreateShader
 local glDeleteShader = gl.DeleteShader
 local glGetShaderLog = gl.GetShaderLog
@@ -120,9 +141,6 @@ local GL_ALWAYS   = GL.ALWAYS
 
 local glAlphaTest = gl.AlphaTest
 local glAlphaToCoverage = gl.AlphaToCoverage
-
-local UI = VFS.Include("LuaUI/Widgets/ui/ocean_settings.lua")
-ui = nil
 
 local ocean_waves_vert_path = 'LuaUI/Widgets/shaders/ocean_waves.vert.glsl'
 local ocean_waves_frag_path = 'LuaUI/Widgets/shaders/ocean_waves.frag.glsl'
@@ -316,7 +334,22 @@ end
 
 function widget:Initialize()
 	SetDrawWater(false)
-	ui = UI:init(default_cascades, material)
+
+	if is_bar then
+		ui = UI:init(default_cascades, material)
+	else -- Hacks!
+		ui = {
+			dm = {
+				cascades = default_cascades,
+				material = material,
+			},
+			dm_handle = {
+				cascades = default_cascades,
+				material = material,
+			},
+		}
+	end
+
 	init_models()
 	init_textures()
 	init_buffers()
@@ -466,8 +499,8 @@ function init_buffers()
 	update_spectrum = true
 end
 function widget:Shutdown()
-	ui:delete()
-	delete_models()
+	if ui.delete then ui:delete() end
+	if clipmap ~= nil then clipmap:Delete() end
 	delete_buffers()
 	delete_textures()
 	delete_shaders()
@@ -481,7 +514,9 @@ end
 -- function widget:GameFrame() end
 function widget:Update(dt)
 	time = time + dt
-	ui_update_map_wind()
+	if is_bar then
+		ui_update_map_wind()
+	end
 end
 
 -- TODO only necessary barrier bits
@@ -597,9 +632,6 @@ end
 -- function widget:UnitEnteredUnderwater(unitID, unitTeam, allyTeam, unitDefID) end
 -- function widget:UnitLeftUnderwater(unitID, unitTeam, allyTeam, unitDefID) end
 
-function delete_models()
-	if clipmap ~= nil then clipmap:Delete() end
-end
 function delete_buffers()
 	update_butterfly = false
 	update_spectrum = false
