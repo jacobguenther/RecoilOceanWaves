@@ -189,7 +189,7 @@ local depth_map_divider = 32
 local map_size_x = Game.mapSizeX
 local map_size_z = Game.mapSizeZ
 
-local material = {
+local default_material = {
 	water_color =      {r = 0.10, g = 0.15, b = 0.18},
 	alpha = 0.25,
 
@@ -269,7 +269,7 @@ local default_cascades = {
 	},
 }
 
-local wave_resolution = 512
+local wave_resolution = 1024
 -- end settings -- 
 
 local NUM_SPECTRA = 4
@@ -278,15 +278,14 @@ local SPECTRUM_TILE_SIZE = 16
 local SPECTRUM_MODULTE_TILE_SIZE = 16
 local UNPACK_TILE_SIZE = 16
 
-local num_fft_stages = log(wave_resolution) / log(2)
-local fft_size = wave_resolution*wave_resolution*4*2*#default_cascades
-local butterfly_size = wave_resolution*num_fft_stages*#default_cascades
-
-local butterfly_dispatch_size = wave_resolution/2/64
-local spectrum_dispatch_size = wave_resolution / SPECTRUM_TILE_SIZE
-local spectrum_modulate_dispatch_size = wave_resolution / SPECTRUM_MODULTE_TILE_SIZE
-local transpose_dispatch_size = wave_resolution / TRANSPOSE_TILE_SIZE
-local unpack_dispatch_size = wave_resolution / UNPACK_TILE_SIZE
+local num_fft_stages
+local fft_size
+local butterfly_size
+local butterfly_dispatch_size
+local spectrum_dispatch_size
+local spectrum_modulate_dispatch_size
+local transpose_dispatch_size
+local unpack_dispatch_size
 
 local time = 0
 
@@ -336,25 +335,66 @@ function widget:Initialize()
 	SetDrawWater(false)
 
 	if is_bar then
-		ui = UI:init(default_cascades, material)
+		ui = UI:init(default_cascades, default_material, wave_resolution)
 	else -- Hacks!
 		ui = {
 			dm = {
 				cascades = default_cascades,
-				material = material,
+				material = default_material,
 			},
 			dm_handle = {
 				cascades = default_cascades,
-				material = material,
+				material = default_material,
 			},
 		}
 	end
 
-	init_models()
+	clipmap = Clip.Clipmap:new(mesh_size, mesh_grid_count, 1)
+
+	init_pipeline_values()
 	init_textures()
 	init_buffers()
 	init_shaders()
 end
+function init_pipeline_values()
+	num_fft_stages = log(wave_resolution) / log(2)
+	fft_size = wave_resolution*wave_resolution*4*2*#default_cascades
+	butterfly_size = wave_resolution*num_fft_stages*#default_cascades
+
+	butterfly_dispatch_size = wave_resolution/2/64
+	spectrum_dispatch_size = wave_resolution / SPECTRUM_TILE_SIZE
+	spectrum_modulate_dispatch_size = wave_resolution / SPECTRUM_MODULTE_TILE_SIZE
+	transpose_dispatch_size = wave_resolution / TRANSPOSE_TILE_SIZE
+	unpack_dispatch_size = wave_resolution / UNPACK_TILE_SIZE
+
+	update_butterfly = true
+	update_spectrum = true
+	should_create_depth_map = true
+
+	ui.dm.material.update_material = true
+	for i=1,#ui.dm.cascades do
+		ui.dm.cascades[i].should_generate_spectrum = true
+	end
+end
+function rebuild_pipeline(new_wave_resolution)
+	if wave_resolution == new_wave_resolution then
+		return
+	end
+	if new_wave_resolution ~= nil then
+		wave_resolution = new_wave_resolution
+	end
+
+	delete_buffers()
+	delete_textures()
+	delete_shaders()
+
+	init_pipeline_values()
+
+	init_textures()
+	init_buffers()
+	init_shaders()
+end
+
 function create_depth_map()
 	local water_level = Spring.GetWaterLevel(0, 0)
 	-- water_level = GetWaterPlaneLevel(0, 0)
@@ -379,11 +419,11 @@ function create_depth_map()
 	depth_ssbo:Upload(depth_data)
 
 	local engine_uniform_buffer_defs = LuaShader.GetEngineUniformBufferDefs()
-	shader_defines = shader_defines..
+	local depth_shader_defines = shader_defines..
 		"#define WATER_LEVEL ".."0.0".."\n"..
 		"#define MAX_DEPTH "..max_depth.."\n"..
 		engine_uniform_buffer_defs
-	local depth_comp = compile_compute_shader(depth_comp_path, shader_defines)
+	local depth_comp = compile_compute_shader(depth_comp_path, depth_shader_defines)
 
 	depth_ssbo:BindBufferRange(5, 0, #depth_data, GL_SHADER_STORAGE_BUFFER)
 	depth_map:bind_image()
@@ -394,9 +434,6 @@ function create_depth_map()
 	glDeleteShader(depth_comp)
 	depth_ssbo:Delete()
 	should_create_depth_map = false
-end
-function init_models()
-	clipmap = Clip.Clipmap:new(mesh_size, mesh_grid_count, 1)
 end
 function init_shaders()
 	local engine_uniform_buffer_defs = LuaShader.GetEngineUniformBufferDefs()
@@ -446,7 +483,7 @@ function init_shaders()
 		Spring.Echo('Ocean Waves Shader: Compilation Failed')
 		widgetHandler:RemoveWidget()
 	end
-	ui.dm.update_material = true
+	ui.dm.material.update_material = true
 
 	butterfly_comp = compile_compute_shader(butterfly_comp_path, shader_defines)
 	spectrum_comp = compile_compute_shader(spectrum_comp_path, shader_defines)
@@ -474,7 +511,7 @@ function init_textures()
 	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=#default_cascades}, 0, GL_RGBA16F)
 	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=#default_cascades}, 1, GL_RGBA16F)
 	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=#default_cascades}, 2, GL_RGBA16F)
-	depth_map = Texture:new('depth_map', {x=map_size_x/32, y=map_size_z/32, z=1}, 3, GL_RGBA16F)
+	depth_map = Texture:new('depth_map', {x=map_size_x/depth_map_divider, y=map_size_z/depth_map_divider, z=1}, 3, GL_RGBA16F)
 end
 local cascade_size = 16
 function init_buffers()
@@ -641,6 +678,7 @@ end
 -- Recull clipmap tiles, update lod levels
 -- function widget:CameraPositionChanged(position) end
 -- function widget:CameraRotationChanged(rotation) end
+-- function widget:ViewResize(newX, newY) end
 
 -- For unit foam/displacement
 -- function widget:UnitEnteredWater(unitID, unitTeam, allyTeam, unitDefID) end

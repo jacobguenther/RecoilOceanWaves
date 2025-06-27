@@ -354,7 +354,9 @@ select selectvalue
 	margin-right: 30dp;
 
 	height: 25dp;
-	padding: 12dp 10dp 0dp 10dp;
+	/* top | right | bottom | left */
+	padding: 2dp 10dp 0dp 10dp;
+	font-weight: bold;
 
 	decorator: image( selectvalue  );
 }

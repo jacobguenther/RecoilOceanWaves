@@ -19,6 +19,12 @@ local atan2 = math.atan2
 local rad_to_deg = math.deg
 
 function ui_change_wave_resolution(event)
+	local value = tonumber(event.parameters.value)
+	if value == nil then
+		return
+	end
+	Spring.Echo(value)
+	rebuild_pipeline(value)
 end
 
 function ui_material_change(event, id, part)
@@ -46,16 +52,7 @@ function ui_update_map_wind()
 end
 
 function ui_select_cascade(event, e)
-	for i=1, #(ui.dm.cascades) do
-		local element = ui.document:GetElementById(""..i)
-		if e == i then
-			element:SetClass("enabled", true)
-			element:SetClass("disabled", false)
-		else
-			element:SetClass("enabled", false)
-			element:SetClass("disabled", true)
-		end
-	end
+	ui.dm_handle.selected_cascade = e
 end
 function ui_cascade_change_tile_size(event, cascade_id)
 	local tile_length = tonumber(event.parameters.value)
@@ -146,7 +143,7 @@ function ui_cascade_change_foam_amount(event, cascade_id)
 end
 
 local UI = {}
-function UI:init(data_model_cascades, material)
+function UI:init(data_model_cascades, material, wave_resolution)
 	local context_name = widget.whInfo.name
 	widget.rmlContext = RmlUi.CreateContext(context_name)
 
@@ -166,6 +163,8 @@ function UI:init(data_model_cascades, material)
 		ui_cascade_change_whitecap = ui_cascade_change_whitecap,
 		ui_cascade_change_foam_amount = ui_cascade_change_foam_amount,
 
+		wave_resolution = wave_resolution,
+
 		min_wind = Game.windMin,
 		max_wind = Game.windMax,
 
@@ -177,6 +176,7 @@ function UI:init(data_model_cascades, material)
 		map_wind_dir_z = 0,
 		map_wind_angle = 0,
 
+		selected_cascade = 1,
 		cascades = data_model_cascades,
 
 		material = material,

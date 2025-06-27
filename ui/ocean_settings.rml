@@ -94,16 +94,14 @@
 
 	<h2>Wave Parameters</h2>
 	<div class="flex-center-space">
-		<label for="wave_resolution">Wave Resolution(TODO)</label>
+		<label for="wave_resolution">Wave Resolution</label>
 		<select id="wave_resolution"
 			name="wave_resolution"
 			data-event-change="ui_change_wave_resolution()"
 		>
-			<option value="64">64x64</option>
-			<option value="128">128x128</option>
-			<option value="256">256x256</option>
-			<option value="512">512x512</option>
-			<option value="1024" selected>1024x1024</option>
+			<option value="256" data-attrif-selected="wave_resolution==256">256x256</option>
+			<option value="512" data-attrif-selected="wave_resolution==512">512x512</option>
+			<option value="1024" data-attrif-selected="wave_resolution==1024">1024x1024</option>
 		</select>
 	</div>
 
@@ -112,7 +110,7 @@
 	</div>
 
 	<div id="cascades" data-for="cascades">
-		<div data-attr-id="it_index+1" class="disabled">
+		<div data-if="it_index+1 == selected_cascade" data-attr-id="it_index+1">
 			<h3>Cascade {{it_index+1}}</h3>
 			<div class="flex-center-space">
 				<label for="tile_size_cascade">Tile Size(m)</label>
