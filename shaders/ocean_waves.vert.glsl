@@ -106,7 +106,7 @@ void main() {
 	vec3 camera_position = cameraViewInv[3].xyz;
 	ivec2 camera_ipos = ivec2(camera_position.xz);
 	vec2 rotated = rotate2d(coords, tile_rot * -(PI/2.0));
-	vec2 uv = (rotated + tile_offset) * tile_scale + vec2(camera_ipos.x-camera_ipos.x%64, camera_ipos.y-camera_ipos.y%64);
+	vec2 uv = (rotated + tile_offset) * tile_scale + vec2(camera_ipos.x-camera_ipos.x%64+32, camera_ipos.y-camera_ipos.y%64+32);
 	vec3 coord = vec3(uv.x, 0.0, uv.y);
 	float dist = distance(coord.xyz, camera_position.xyz);
 
