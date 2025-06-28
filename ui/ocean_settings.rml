@@ -278,7 +278,7 @@
 		<hr />
 		<div id="debug" data-if="debug_visible > 0">
 			<div class="flex-center-space">
-				<label for="debug_disable_displacement">Disable Displacement(TODO)</label>
+				<label for="debug_disable_displacement">Disable Displacement</label>
 				<input type="checkbox"
 					id="debug_disable_displacement"
 					name="debug_disable_displacement"
@@ -286,7 +286,7 @@
 			</div>
 
 			<div class="flex-center-space">
-				<label for="primitive_mode">Primitive Mode(TODO)</label>
+				<label for="primitive_mode">Primitive Mode</label>
 				<select id="primitive_mode"
 					name="primitive_mode"
 					data-event-change="ui_debug_set_primitive_mode()" >
@@ -327,7 +327,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_displacement_map">Displacement Map(TODO)</label>
+					<label for="debug_displacement_map">Displacement Map</label>
 					<input type="radio" name="debugcolor"
 						id="debug_displacement_map"
 						value="displacement"
@@ -343,7 +343,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_normal_map">Normal Map(TODO)</label>
+					<label for="debug_normal_map">Normal Map</label>
 					<input type="radio" name="debugcolor"
 						id="debug_normal_map"
 						value="normal"
