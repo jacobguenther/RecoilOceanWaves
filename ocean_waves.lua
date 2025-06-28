@@ -583,6 +583,8 @@ end
 
 -- TODO only necessary barrier bits
 function widget:DrawGenesis()
+	if chobbyInterface then return end
+
 	if should_create_depth_map then
 		create_depth_map()
 	end
