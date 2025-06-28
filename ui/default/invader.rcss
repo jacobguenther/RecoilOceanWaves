@@ -355,7 +355,6 @@ select selectvalue
 
 	height: 25dp;
 	padding: 12dp 10dp 0dp 10dp;
-	font-weight: bold;
 
 	decorator: image( selectvalue  );
 }
