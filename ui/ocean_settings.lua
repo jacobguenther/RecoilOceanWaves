@@ -200,15 +200,27 @@ function ui_override_gravity(event, gravity_value_id)
 	Spring.Echo("ui_override_gravity", event.parameters.value)
 	if event.parameters.value == "on" then
 		local value = ui.document:GetElementById(gravity_value_id):GetAttribute("value")
+		Spring.Echo("ui_override_gravity", value)
 		local override = tonumber(value)
 		if override then
 			set_gravity(override)
 			rebuild_pipeline()
 		end
+	else
+		default_gravity()
+		rebuild_pipeline()
 	end
 end
 function set_gravity_override_value(event)
-
+	local checked = ui.document:GetElementById("gravity_override"):GetAttribute("checked")
+	if checked ~= nil then
+		local override = tonumber(event.parameters.value)
+		if type(override) ~= "number" then
+			return
+		end
+		set_gravity(override)
+		rebuild_pipeline()
+	end
 end
 
 local UI = {}
