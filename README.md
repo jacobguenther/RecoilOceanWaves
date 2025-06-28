@@ -96,7 +96,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 
 ### Map Settings
 - [ ] Have cascade winds track map wind
-- [ ] Use map gravity, normal or space/moon [#2](/../../issues/2)
+- [ ] Use map gravity, normal or space/moon [#3](/../../issues/3)
 
 ### Settings
 - [ ] Save settings
