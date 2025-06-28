@@ -1,5 +1,5 @@
 body {
-	width: 600px;
+	width: 600dp;
 	height: auto;
 
 	overflow: hidden;
@@ -9,8 +9,9 @@ body {
 
 h1, h2, h3 {
 	/* top | right | bottom | left */
-	padding: 0px 0px 0px 4px;
-	margin: 0px;
+	padding: 0dp 0dp 0dp 4dp;
+	margin: 0dp;
+	font-size: unset;
 }
 handle, h1, #cascades_tab {
 	background-color: black;
@@ -21,55 +22,127 @@ h2 {
 h3 {
 	background-color: #222;
 }
+
 button {
 	padding-top: 6dp;
 }
 
+select, selectvalue, selectarrow, selectbox,
+option
+{
+	padding: 0dp;
+	margin: 0dp;
+	decorator: none;
+}
+
+select {
+	display: flex;
+	width: 175dp;
+	height: 25dp;
+}
+
+ /* The container element for the selected option. */
+select selectvalue {
+	width: auto;
+	height: 25dp;
+	margin-right: 30dp;
+
+	font-weight: bold;
+
+	border-width: 4dp;
+	border-color: #991416;
+	border-radius: 2dp 0dp 0dp 0dp;
+	background-color: #FFFFFF;
+}
+
+/* The button rendered to the right of the value element. */
+select selectarrow {
+	width: 30dp;
+	/* ?? */
+	height: 25dp;
+	decorator: image( selectarrow );
+}
+
+select:hover selectvalue {
+	border-color: #FF5D5D;
+}
+select:hover selectarrow {
+	decorator: image( selectarrow-hover );
+}
+
+/*
+The box containing the options. The visibility of this element is toggled when
+the arrow or value elements are clicked on, or when an option is selected.
+*/
+select selectbox {
+	width: 125dp;
+	height: 75dp;
+}
+selectbox option {
+	height: 25dp;
+	background: #DDDDFF;
+}
+selectbox option:nth-child(even) {
+	background: #EEEEFF;
+}
+selectbox option:checked {
+	font-weight: bold;
+}
+selectbox option:hover {
+	background: #FF5D5D;
+}
+
+
 #ocean_waves {
-	padding-bottom: 4px;
+	padding-bottom: 4dp;
 }
 
 handle {
 	display: flex;
-	width: 600px;
+	width: 600dp;
 	align-items: center;
 }
 handle h1 {
 	margin-right: auto;
 }
 handle button {
-	width: 50px;
+	width: 50dp;
 }
 
 #cascades_tab {
 	display: flex;
-	width: 600px;
+	width: 600dp;
 	align-items: center;
 }
 #cascades_tab button {
-	width: 150px;
+	width: 150dp;
 }
 
 .flex-center-space {
 	display: flex;
-	width: 800px;
+	max-width: 600dp;
 }
 .flex-center-space > label {
-	width: 200px;
+	width: 200dp;
 }
 .flex-center-space > input {
-	max-width: 100px;
+	max-width: 100dp;
 }
 .flex-center-space > span {
-	width: 100px;
+	width: 100dp;
+}
+.flex-center-space > select {
+	width: 125dp;
+	/* ?? */
+	margin-left: 25dp;
 }
 
 #wind_min_max {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	margin-left: 350px;
+	margin-left: 350dp;
 }
 #wind_min_max * {
-	width: 75px;
+	width: 75dp;
 }
