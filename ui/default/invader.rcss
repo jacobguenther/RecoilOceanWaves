@@ -62,11 +62,11 @@
 	selectbox-b:  292px 285px 1px 11px;
 	selectbox-br: 294px 285px 11px 11px;
 
-	selectvalue: 162px 192px 145px 37px;
+	selectvalue: 166px 199px 140px 22px;
 	selectvalue-hover: 162px 230px 145px 37px;
-	selectarrow: 307px 192px 30px 37px;
-	selectarrow-hover: 307px 230px 30px 37px;
-	selectarrow-active: 307px 268px 30px 37px;
+	selectarrow: 307px 199px 22px 22px;
+	selectarrow-hover: 307px 237px 22px 22px;
+	selectarrow-active: 307px 268px 22px 22px;
 
 	radio: 407px 0px 30px 30px;
 	radio-hover: 437px 0px 30px 30px;
@@ -339,86 +339,6 @@ table input.text
 
 	decorator: none;
 }
-
-
-
-select
-{
-	width: 175dp;
-	height: 37dp;
-}
-
-select selectvalue
-{
-	width: auto;
-	margin-right: 30dp;
-
-	height: 25dp;
-	padding: 12dp 10dp 0dp 10dp;
-
-	decorator: image( selectvalue  );
-}
-
-select selectarrow
-{
-	width: 30dp;
-	height: 37dp;
-
-	decorator: image( selectarrow );
-}
-
-select:hover selectarrow
-{
-	decorator: image( selectarrow-hover );
-}
-
-select:active selectarrow,
-select selectarrow:checked
-{
-	decorator: image( selectarrow-active );
-}
-
-select selectbox
-{
-	margin-left: 1dp;
-	margin-top: -7dp;
-	margin-bottom: -10dp;
-	width: 162dp;
-	padding: 1dp 4dp 4dp 4dp;
-}
-
-select selectbox,
-tbody
-{
-	decorator: tiled-box(
-		selectbox-tl, selectbox-t, selectbox-tr,
-		selectbox-l, selectbox-c, auto,  /* auto mirrors left */
-		selectbox-bl, selectbox-b, selectbox-br
-	);
-}
-
-select selectbox option
-{
-	width: auto;
-	padding: 3dp 0 3dp 6dp;
-	background: #DDDD;
-}
-
-select selectbox option:nth-child(even),
-tr:nth-child(even)
-{
-	background: #FFFFFFA0;
-}
-select selectbox option:checked
-{
-	font-weight: bold;
-}
-select selectbox option:hover
-{
-	background: #FF5D5D;
-}
-
-
 
 input.radio,
 input.checkbox
