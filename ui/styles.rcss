@@ -11,7 +11,6 @@ h1, h2, h3 {
 	/* top | right | bottom | left */
 	padding: 0dp 0dp 0dp 4dp;
 	margin: 0dp;
-	font-size: unset;
 }
 handle, h1, #cascades_tab {
 	background-color: black;
@@ -95,6 +94,9 @@ selectbox option:hover {
 
 #ocean_waves {
 	padding-bottom: 4dp;
+}
+.collapsable-section-header:hover {
+	color: #FF5D5D;
 }
 
 handle {

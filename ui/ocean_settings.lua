@@ -31,6 +31,18 @@ function ui_toggle_hidden()
 	end
 end
 
+function ui_minimize_section(event, name)
+	if name == "material" then
+		ui.dm_handle.material_visible = not ui.dm_handle.material_visible
+	elseif name == "wind" then
+		ui.dm_handle.wind_visible = not ui.dm_handle.wind_visible
+	elseif name == "wave" then
+		ui.dm_handle.wave_visible = not ui.dm_handle.wave_visible
+	elseif name == "debug" then
+		ui.dm_handle.debug_visible = not ui.dm_handle.debug_visible
+	end
+end
+
 function ui_change_wave_resolution(event)
 	local value = tonumber(event.parameters.value)
 	if value == nil then
@@ -163,9 +175,14 @@ function UI:init(data_model_cascades, material, wave_resolution)
 	local dm = {
 		ui_minimize = ui_minimize,
 		ui_toggle_hidden = ui_toggle_hidden,
+		ui_minimize_section = ui_minimize_section,
+
 		ui_change_wave_resolution = ui_change_wave_resolution,
+
 		ui_material_change = ui_material_change,
+
 		ui_select_cascade = ui_select_cascade,
+
 		ui_cascade_change_tile_size = ui_cascade_change_tile_size,
 		ui_cascade_change_displacement_scale = ui_cascade_change_displacement_scale,
 		ui_cascade_change_normal_scale = ui_cascade_change_normal_scale,
@@ -193,11 +210,16 @@ function UI:init(data_model_cascades, material, wave_resolution)
 
 		selected_cascade = 1,
 		cascades = data_model_cascades,
+		material = material,
 
 		should_minimize = 1,
 		hidden = 1,
-
-		material = material,
+		-- collapsable sections
+		-- used in ui_minimize_section
+		material_visible = 0,
+		wind_visible = 0,
+		wave_visible = 0,
+		debug_visible = 1,
 	}
 
 	local dm_name = "ocean_waves_dm"
