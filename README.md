@@ -41,7 +41,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 ### UI Improvements
 - [ ] Finish UI
 - [X] Hookup change wave resolution
-- [ ] Fix Select/Option css
+- [X] Fix Select/Option css
 - [X] Fix Cascade button css
 - [ ] Sliders where applicable
 - [ ] Bound checking where applicable
