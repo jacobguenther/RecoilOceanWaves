@@ -95,6 +95,32 @@
 			</div>
 		</div>
 
+		<h2 data-event-click="ui_minimize_section('gravity')" class="collapsable-section-header">Gravity</h2>
+		<hr />
+		<div data-if="gravity_visible > 0">
+			<div class="flex-center-space">
+				<label>Map Gravity</label>
+				<span>{{map_gravity}}</span>
+			</div>
+			<div class="flex-center-space">
+				<label>Calculated Gravity</label>
+				<span>{{default_gravity}}</span>
+			</div>
+			<div class="flex-center-space">
+				<label for="gravity_override">Override</label>
+				<input type="checkbox" name="gravity_override"
+						id="gravity_override"
+						data-event-change="ui_override_gravity('gravity_override_value')" />
+				<input type="number" name="gravity_override_value"
+					id="gravity_override_value"
+					size="10"
+					value="9.81"
+					min="0.0001"
+					max="1000"
+					data-event-change="set_gravity_override_value()" />
+			</div>
+		</div>
+
 		<h2 data-event-click="ui_minimize_section('wave')" class="collapsable-section-header">Wave Parameters</h2>
 		<hr />
 		<div id="wave_parameters" data-if="wave_visible > 0">

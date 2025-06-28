@@ -132,10 +132,12 @@ handle button {
 }
 .flex-center-space > span {
 	width: 100dp;
+	/* why?? */
+	margin-left: 25dp;
 }
 .flex-center-space > select {
 	width: 125dp;
-	/* ?? */
+	/* why?? */
 	margin-left: 25dp;
 }
 

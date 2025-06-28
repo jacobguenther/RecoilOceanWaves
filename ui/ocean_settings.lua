@@ -40,6 +40,8 @@ function ui_minimize_section(event, name)
 		ui.dm_handle.wave_visible = not ui.dm_handle.wave_visible
 	elseif name == "debug" then
 		ui.dm_handle.debug_visible = not ui.dm_handle.debug_visible
+	elseif name == "gravity" then
+		ui.dm_handle.gravity_visible = not ui.dm_handle.gravity_visible
 	end
 end
 
@@ -194,20 +196,39 @@ function ui_debug_update_texture_index(event, for_texture)
 	end
 end
 
+function ui_override_gravity(event, gravity_value_id)
+	Spring.Echo("ui_override_gravity", event.parameters.value)
+	if event.parameters.value == "on" then
+		local value = ui.document:GetElementById(gravity_value_id):GetAttribute("value")
+		local override = tonumber(value)
+		if override then
+			set_gravity(override)
+			rebuild_pipeline()
+		end
+	end
+end
+function set_gravity_override_value(event)
+
+end
+
 local UI = {}
 function UI:new(data_model_cascades, material, debug, wave_resolution)
 	local context_name = widget.whInfo.name
 	widget.rmlContext = RmlUi.CreateContext(context_name)
+
+	local default_gravity, _ = get_gravity()
 
 	local dm = {
 		ui_minimize = ui_minimize,
 		ui_toggle_hidden = ui_toggle_hidden,
 		ui_minimize_section = ui_minimize_section,
 
-		ui_change_wave_resolution = ui_change_wave_resolution,
-
 		ui_material_change = ui_material_change,
 
+		ui_override_gravity = ui_override_gravity,
+		set_gravity_override_value = set_gravity_override_value,
+
+		ui_change_wave_resolution = ui_change_wave_resolution,
 		ui_select_cascade = ui_select_cascade,
 
 		ui_cascade_change_tile_size = ui_cascade_change_tile_size,
@@ -240,6 +261,9 @@ function UI:new(data_model_cascades, material, debug, wave_resolution)
 		map_wind_dir_z = 0,
 		map_wind_angle = 0,
 
+		map_gravity = Game.gravity,
+		default_gravity = default_gravity,
+
 		selected_cascade = 1,
 		cascades = data_model_cascades,
 		material = material,
@@ -251,6 +275,7 @@ function UI:new(data_model_cascades, material, debug, wave_resolution)
 		-- used in ui_minimize_section
 		material_visible = 0,
 		wind_visible = 0,
+		gravity_visible = 1,
 		wave_visible = 0,
 		debug_visible = 1,
 	}

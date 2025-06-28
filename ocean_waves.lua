@@ -53,8 +53,20 @@ elseif is_zero_k then
 	LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
 end
 
-local G = 9.81
-local G2 = G*G
+local G
+local G2
+function default_gravity()
+	G = 9.80665 * Game.gravity / 100
+	G2 = G*G
+end
+function set_gravity(new_gravity)
+	G = new_gravity
+	G2 = G*G
+end
+function get_gravity()
+	return G, G2
+end
+default_gravity()
 
 local log = math.log
 local max = math.max
