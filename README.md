@@ -52,11 +52,11 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [X] Minimize/Close ui buttons
 
 ### Debug UI
-- [ ] disable displacement
-- [ ] primitive mode
+- [X] disable displacement
+- [X] primitive mode
 - [ ] lod coloring
-- [ ] clipmap layer coloring
-- [ ] view various textures
+- [X] clipmap layer coloring
+- [X] view various textures
 
 ### Map Settings
 - [ ] Have cascade winds track map wind
@@ -68,7 +68,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Reset to default settings
 
 ### Documentation
-- [ ] Describe parameters in this readme
+- [ ] Describe settings in this readme
 - [ ] lua doc comments
 
 ### Preformance

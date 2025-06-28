@@ -34,7 +34,7 @@
 				<input type="number" data-attr-value="material.foam_color.b" data-event-change="ui_material_change('foam_color', 'b')" />
 			</div>
 			<div class="flex-center-space">
-				<label>Alpha</label>
+				<label>Foam Alpha</label>
 				<input type="number" data-attr-value="material.foam_alpha" data-event-change="ui_material_change('foam_alpha')" />
 			</div>
 			<div class="flex-center-space">
@@ -111,10 +111,9 @@
 			</div>
 
 			<div id="cascades_tab">
-					<!-- FIXME:
+					<!-- FIXME: Can't loop cascades and use display: flex?
 						data-for="cascades"
 						data-vent-click="ui_selecte_cascade({{it_index+1}})"
-						Can't loop cascades and use display: flex?
 					-->
 					<button data-event-click="ui_select_cascade(1)">Cascade 1</button>
 					<button data-event-click="ui_select_cascade(2)">Cascade 2</button>
@@ -253,17 +252,21 @@
 		<hr />
 		<div id="debug" data-if="debug_visible > 0">
 			<div class="flex-center-space">
-				<label for="">Disable Displacement(TODO)</label>
-				<input type="checkbox" id="" name="" data-event-change="" />
+				<label for="debug_disable_displacement">Disable Displacement(TODO)</label>
+				<input type="checkbox"
+					id="debug_disable_displacement"
+					name="debug_disable_displacement"
+					data-event-change="ui_debug_change_displacement()" />
 			</div>
 
 			<div class="flex-center-space">
 				<label for="primitive_mode">Primitive Mode(TODO)</label>
 				<select id="primitive_mode"
-					name="primitive_mode">
-					<option value="TRIANGLES">TRIANGLES</option>
-					<option value="LINES">LINES</option>
-					<option value="POINTS">POINTS</option>
+					name="primitive_mode"
+					data-event-change="ui_debug_set_primitive_mode()" >
+					<option value="TRIANGLES" data-attrif-selected="debug.primitive_mode=='TRIANGLES'">TRIANGLES</option>
+					<option value="LINES" data-attrif-selected="debug.primitive_mode=='LINES'">LINES</option>
+					<option value="POINTS" data-attrif-selected="debug.primitive_mode=='POINTS'">POINTS</option>
 				</select>
 			</div>
 
@@ -271,46 +274,71 @@
 			<hr />
 			<form>
 				<div class="flex-center-space">
-					<label for="debug_lod_level">LOD level(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_lod_level" value="lod" />
+					<label for="debug_color_none">Normal Coloring</label>
+					<input type="radio" name="debugcolor"
+						id="debug_color_none"
+						value="none" checked 
+						data-event-change="ui_debug_coloring()"
+					/>
 				</div>
+
 				<div class="flex-center-space">
-					<label for="debug_clipmap_layer" >Clipmap Layer(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_clipmap_layer" value="clipmap" />
+					<label for="debug_lod_level">LOD level(TODO)</label>
+					<input type="radio" name="debugcolor"
+						id="debug_lod_level"
+						value="lod"
+						data-event-change="ui_debug_coloring()"
+					/>
 				</div>
+				
+				<div class="flex-center-space">
+					<label for="debug_clipmap_layer" >Clipmap Layer</label>
+					<input type="radio" name="debugcolor"
+						id="debug_clipmap_layer"
+						value="clipmap"
+						data-event-change="ui_debug_coloring()"
+					/>
+				</div>
+				
 				<div class="flex-center-space">
 					<label for="debug_displacement_map">Displacement Map(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_displacement_map" value="displacement" />
+					<input type="radio" name="debugcolor"
+						id="debug_displacement_map"
+						value="displacement"
+						data-event-change="ui_debug_coloring('debug_displacement_map_index')"
+					/>
 					<select id="debug_displacement_map_index"
-						name="debug_displacement_map_index">
-						<option value="0">0</option>
+						name="debug_displacement_map_index"
+						data-event-change="ui_debug_update_texture_index('displacement')" >
+						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
 					</select>
 				</div>
+				
 				<div class="flex-center-space">
 					<label for="debug_normal_map">Normal Map(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_normal_map" value="normal" />
+					<input type="radio" name="debugcolor"
+						id="debug_normal_map"
+						value="normal"
+						data-event-change="ui_debug_coloring('debug_normal_map_index')"
+					/>
 					<select id="debug_normal_map_index"
-						name="debug_normal_map_index">
-						<option value="0">0</option>
+						name="debug_normal_map_index"
+						data-event-change="ui_debug_update_texture_index('normal')" >
+						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
 					</select>
 				</div>
+				
 				<div class="flex-center-space">
-					<label for="debug_wave_spectrum">Wave Spectrum(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_wave_spectrum" value="spectrum" />
-					<select id="debug_wave_spectrum_index"
-						name="debug_wave_spectrum_index">
-						<option value="0">0</option>
-						<option value="1">1</option>
-						<option value="2">2</option>
-					</select>
-				</div>
-				<div class="flex-center-space">
-					<label for="debug_depth">Depth(TODO)</label>
-					<input type="radio" name="debugcolor" id="debug_depth" value="depth" />
+					<label for="debug_depth">Depth</label>
+					<input type="radio" name="debugcolor"
+						id="debug_depth"
+						value="depth"
+						data-event-change="ui_debug_coloring()"
+					/>
 				</div>
 			</form>
 		</div>

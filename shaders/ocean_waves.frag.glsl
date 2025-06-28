@@ -77,6 +77,10 @@ layout(std430, binding=6) restrict readonly buffer Cascade {
 	CascadeParameters cascades[NUM_CASCADES];
 };
 
+#ifdef DEBUG_COLOR_TEXTURE_DISPLACEMENT
+	layout (binding=DISPLACEMENT_MAP_BINDING) uniform sampler2DArray displacement_map;
+#endif
+
 layout (binding=NORMAL_MAP_BINDING) uniform sampler2DArray normal_map;
 layout (binding=DEPTH_MAP_BINDING) uniform sampler2DArray depth_map;
 
@@ -347,8 +351,17 @@ void main() {
 		alpha = 1.0;
 	#endif
 
+	#ifdef DEBUG_COLOR_TEXTURE_DISPLACEMENT
+		vec2 uv_scale = vec2(1.0 / cascades[DEBUG_COLOR_TEXTURE_DISPLACEMENT].tile_length);
+		vec3 coords = vec3(IN.uv*uv_scale, float(DEBUG_COLOR_TEXTURE_DISPLACEMENT));
+		color = texture(displacement_map, coords).xyz;
+		alpha = 1.0;
+	#endif
+
 	#ifdef DEBUG_COLOR_TEXTURE_NORMAL
-		color = texture(normal_map, vec3(IN.world_vertex_position.xz/mapSize.xy, float(DEBUG_COLOR_TEXTURE_NORMAL))).xyz;
+		vec2 uv_scale = vec2(1.0 / cascades[DEBUG_COLOR_TEXTURE_NORMAL].tile_length);
+		vec3 coords = vec3(IN.uv*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
+		color = texture(normal_map, coords).xyz;
 		alpha = 1.0;
 	#endif
 

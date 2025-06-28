@@ -117,6 +117,10 @@ void main() {
 		float displacement_scale = cascades[i].scales.x;
 		displacement += texture(displacement_map, uv_coords).xyz * displacement_scale;
 	}
+	#ifdef DEBUG_DISABLE_DISPLACEMENT
+		displacement = vec3(0.0);
+	#endif
+
 
 	// FIXME: Have this configurable in meters
 	// Displacement amonut falls off after 4096 gl units

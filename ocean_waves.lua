@@ -270,6 +270,13 @@ local default_cascades = {
 }
 
 local wave_resolution = 1024
+
+local debug_settings_defaults = {
+	disable_displacement = false,
+	primitive_mode = "TRIANGLES", -- "TRIANGLES" | "LINES" | "POINTS"
+	coloring = "none", -- "none" | "lod" | "clipmap" | "displacement" | "normal" | "spectrum" | "depth"
+	texture_layer = 0,
+}
 -- end settings -- 
 
 local NUM_SPECTRA = 4
@@ -334,27 +341,38 @@ end
 function widget:Initialize()
 	SetDrawWater(false)
 
-	if is_bar then
-		ui = UI:init(default_cascades, default_material, wave_resolution)
-	else -- Hacks!
-		ui = {
-			dm = {
-				cascades = default_cascades,
-				material = default_material,
-			},
-			dm_handle = {
-				cascades = default_cascades,
-				material = default_material,
-			},
-		}
-	end
-
 	clipmap = Clip.Clipmap:new(mesh_size, mesh_grid_count, 1)
+
+	init_ui()
 
 	init_pipeline_values()
 	init_textures()
 	init_buffers()
 	init_shaders()
+end
+function init_ui()
+	if is_bar then
+		ui = UI:new(
+			default_cascades,
+			default_material,
+			debug_settings_defaults,
+			wave_resolution
+		)
+		ui:Init()
+	else -- Hacks!
+		ui = {
+			dm = {
+				cascades = default_cascades,
+				material = default_material,
+				debug = debug_settings_defaults,
+			},
+			dm_handle = {
+				cascades = default_cascades,
+				material = default_material,
+				debug = debug_settings_defaults,
+			},
+		}
+	end
 end
 function widget:TextCommand(message)
 	local match = message:gmatch("%w+")
@@ -402,6 +420,15 @@ function rebuild_pipeline(new_wave_resolution)
 	init_textures()
 	init_buffers()
 	init_shaders()
+end
+function set_primitive_mode(mode)
+	if mode == "TRIANGLES" then
+		clipmap:SetPrimitiveMode(GL_TRIANGLES)
+	elseif mode == "LINES" then
+		clipmap:SetPrimitiveMode(GL_LINES)
+	elseif mode == "POINTS" then
+		clipmap:SetPrimitiveMode(GL_POINTS)
+	end
 end
 
 function create_depth_map()
@@ -477,6 +504,29 @@ function init_shaders()
 
 		"#define MESH_SIZE "..mesh_size.."\n"
 
+	if ui.dm_handle.debug.disable_displacement then
+		shader_defines = shader_defines..
+			"#define DEBUG_DISABLE_DISPLACEMENT\n"
+	end
+
+	local coloring = ui.dm_handle.debug.coloring
+	local texture = ui.dm_handle.debug.texture
+	-- if coloring == "lod" then
+	-- end
+	if coloring == "clipmap" then
+		shader_defines = shader_defines..
+			"#define DEBUG_COLOR_CLIPMAP\n"
+	elseif coloring == "displacement" then
+		shader_defines = shader_defines..
+			"#define DEBUG_COLOR_TEXTURE_DISPLACEMENT "..texture.."\n"
+	elseif coloring == "normal" then
+		shader_defines = shader_defines..
+			"#define DEBUG_COLOR_TEXTURE_NORMAL "..texture.."\n"
+	elseif coloring == "depth" then
+		shader_defines = shader_defines..
+			"#define DEBUG_COLOR_TEXTURE_DEPTH\n"
+	end
+
 	local ocean_waves_vert_src = VFS.LoadFile(ocean_waves_vert_path, VFS.RAW)
 	local ocean_waves_frag_src = VFS.LoadFile(ocean_waves_frag_path, VFS.RAW)
 	ocean_waves_vert_src = ocean_waves_vert_src:gsub("//__ENGINEUNIFORMBUFFERDEFS__", engine_uniform_buffer_defs)
@@ -512,7 +562,6 @@ function compile_compute_shader(path, custom_defines)
 	if (compute_shader == nil) then
 		Spring.Echo('Ocean Waves: '..path.." Compilation Failed"..glGetShaderLog())
 		widgetHandler:RemoveWidget()
-		return nil
 	end
 	return compute_shader
 end

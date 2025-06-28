@@ -48,7 +48,6 @@ function ui_change_wave_resolution(event)
 	if value == nil then
 		return
 	end
-	Spring.Echo(value)
 	rebuild_pipeline(value)
 end
 
@@ -167,8 +166,36 @@ function ui_cascade_change_foam_amount(event, cascade_id)
 	ui.dm.cascades[cascade_id].foam_amount = foam_amount
 end
 
+function ui_debug_change_displacement(event)
+	ui.dm_handle.debug.disable_displacement = event.parameters.value == "on"
+	rebuild_pipeline()
+end
+
+function ui_debug_set_primitive_mode(event)
+	set_primitive_mode(event.parameters.value)
+end
+
+function ui_debug_coloring(event, select_id)
+	local value = event.parameters.value;
+	if value == "none" or value == "lod" or value == "clipmap" or value == "depth" then
+		ui.dm_handle.debug.coloring = value
+		rebuild_pipeline()
+	elseif value == "displacement" or value == "normal" or value == "spectrum" then
+		local selection = ui.document:GetElementById(select_id):GetAttribute("value")
+		ui.dm_handle.debug.coloring = value
+		ui.dm_handle.debug.texture = tonumber(selection)
+		rebuild_pipeline()
+	end
+end
+function ui_debug_update_texture_index(event, for_texture)
+	if ui.dm_handle.debug.coloring == for_texture then
+		ui.dm_handle.debug.texture = tonumber(event.parameters.value)
+		rebuild_pipeline()
+	end
+end
+
 local UI = {}
-function UI:init(data_model_cascades, material, wave_resolution)
+function UI:new(data_model_cascades, material, debug, wave_resolution)
 	local context_name = widget.whInfo.name
 	widget.rmlContext = RmlUi.CreateContext(context_name)
 
@@ -195,6 +222,11 @@ function UI:init(data_model_cascades, material, wave_resolution)
 		ui_cascade_change_whitecap = ui_cascade_change_whitecap,
 		ui_cascade_change_foam_amount = ui_cascade_change_foam_amount,
 
+		ui_debug_change_displacement = ui_debug_change_displacement,
+		ui_debug_set_primitive_mode = ui_debug_set_primitive_mode,
+		ui_debug_coloring = ui_debug_coloring,
+		ui_debug_update_texture_index = ui_debug_update_texture_index,
+
 		wave_resolution = wave_resolution,
 
 		min_wind = Game.windMin,
@@ -211,6 +243,7 @@ function UI:init(data_model_cascades, material, wave_resolution)
 		selected_cascade = 1,
 		cascades = data_model_cascades,
 		material = material,
+		debug = debug,
 
 		should_minimize = 1,
 		hidden = 1,
@@ -229,22 +262,23 @@ function UI:init(data_model_cascades, material, wave_resolution)
 		return
 	end
 
-	local document = widget.rmlContext:LoadDocument("LuaUI/Widgets/ui/ocean_settings.rml", widget)
-	if not document then
-		Spring.Echo("Failed to load document")
-		return
-	end
-
-	document:ReloadStyleSheet()
-	document:Show()
-
 	local this = {
 		context_name = context_name,
 		dm_name = dm_name,
 		dm_handle = dm_handle,
-		document = document,
+		document = nil,
 		dm = dm,
 	}
+	function this:Init()
+		local document = widget.rmlContext:LoadDocument("LuaUI/Widgets/ui/ocean_settings.rml", widget)
+		if not document then
+			Spring.Echo("Failed to load document")
+			return
+		end
+		this.document = document
+		this.document:ReloadStyleSheet()
+		this.document:Show()
+	end
 	function this:delete()
 		widget.rmlContext:RemoveDataModel(this.dm_name)
 		if document then
