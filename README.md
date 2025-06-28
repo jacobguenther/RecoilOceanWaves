@@ -71,6 +71,9 @@ Feedback is welcome!
 
 If you find a bug or have a feature request let me know by opening an [issue](https://github.com/jacobguenther/RecoilOceanWaves/issues) or by finding the [post for this widget](https://discord.com/channels/549281623154229250/1113845509891829810/threads/1387909127233339482) on the [Beyond All Reason Discord](https://discord.com/invite/Q9MtKt48SX) and leave a comment.
 
+## Support
+If you like this project please give this repository a star⭐ and the discord post a positive reaction⚡.
+
 ## Roadmap
 
 ### UI Improvements
@@ -141,6 +144,9 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 
 ### Code Refactoring
 - [ ] Decouple UI from widget
+
+### Misc
+- [ ] Change license to GPLv2 or later. AGPL and GPLv3 are not compatible with GPLv2 which is what the engine and (most?)games use.
 
 ## License
 All code(.lua, .glsl) files in this repository have the [GNU AGPLv3](LICENSE) license.
