@@ -190,6 +190,19 @@ function API:Init(state)
 		end
 	end
 
+	function set_gravity(new_gravity)
+		local gravity = as_number(new_gravity)
+		if gravity then
+			state:SetGravity(gravity)
+		end
+	end
+	function set_default_gravity()
+		state:SetDefaultGravity()
+	end
+	function get_gravity()
+		return state:GetGravity()
+	end
+	
 	--- /oceanwaves setwaveresolution new_resolution
 	---@param new_resolution number
 	function set_wave_resolution(new_resolution)
@@ -253,7 +266,7 @@ function API:Init(state)
 			cascade.wind_speed2 = wind_speed2
 			cascade.wind_fetch = wind_fetch
 			cascade.alpha = 0.076 * pow(wind_speed2 / cascade.fetch_length_G, 0.22)
-			cascade.omega = 22.0 * pow(state.G2 / wind_fetch, 0.33333333)
+			cascade.omega = 22.0 * pow(state.gravity2 / wind_fetch, 0.33333333)
 
 			cascade.should_generate_spectrum = true
 			state.upload_cascades_ssbo = true
@@ -282,14 +295,14 @@ function API:Init(state)
 			local cascade = state.cascades[cascade_index]
 			cascade.fetch_length_km = value
 			local fetch_length_m = value*1e3
-			local fetch_length_G = fetch_length_m * state.G
+			local fetch_length_G = fetch_length_m * state.gravity
 			local wind_fetch = cascade.wind_speed * fetch_length_m
 
 			cascade.fetch_length_m = fetch_length_m
 			cascade.fetch_length_G = fetch_length_G
 			cascade.wind_fetch = wind_fetch
 			cascade.alpha = 0.076 * pow(cascade.wind_speed2 / fetch_length_G, 0.22)
-			cascade.omega = 22.0 * pow(state.G2 / wind_fetch, 0.33333333)
+			cascade.omega = 22.0 * pow(state.gravity2 / wind_fetch, 0.33333333)
 
 			cascade.should_generate_spectrum = true
 			state.upload_cascades_ssbo = true
@@ -367,6 +380,11 @@ function API:Init(state)
 		get_foam_alpha = function() return state.material.foam_alpha end,
 		get_subsurface_color = function() return state.material.subsurface_color end,
 		get_roughness = function() return state.material.roughness end,
+
+		set_gravity = set_gravity,
+		set_default_gravity = set_default_gravity,
+		get_gravity = get_gravity,
+		get_default_gravity = function() return G end,
 
 		set_wave_resolution = set_wave_resolution,
 		get_wave_resolution = function() return state.wave_resolution end,

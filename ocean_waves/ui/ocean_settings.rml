@@ -101,9 +101,6 @@
 			<div class="flex-center-space">
 				<label>Map Gravity</label>
 				<span>{{map_gravity}}</span>
-			</div>
-			<div class="flex-center-space">
-				<label>Calculated Gravity</label>
 				<span>{{default_gravity}}</span>
 			</div>
 			<div class="flex-center-space">

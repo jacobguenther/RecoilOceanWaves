@@ -232,29 +232,24 @@ function ui_debug_update_texture_index(event, for_texture)
 end
 
 function ui_override_gravity(event, gravity_value_id)
-	-- TODO
 	if event.parameters.value == "on" then
 		local value = ui.document:GetElementById(gravity_value_id):GetAttribute("value")
 		local override = tonumber(value)
 		if override then
-			set_gravity(override)
-			rebuild_pipeline()
+			WG["oceanwaves"].set_gravity(override)
 		end
 	else
-		default_gravity()
-		rebuild_pipeline()
+		WG["oceanwaves"].set_default_gravity()
 	end
 end
 function set_gravity_override_value(event)
-	-- TODO
 	local checked = ui.document:GetElementById("gravity_override"):GetAttribute("checked")
 	if checked ~= nil then
 		local override = tonumber(event.parameters.value)
 		if type(override) ~= "number" then
 			return
 		end
-		set_gravity(override)
-		rebuild_pipeline()
+		WG["oceanwaves"].set_gravity(override)
 	end
 end
 
@@ -263,7 +258,7 @@ function UI:new(data_model_cascades, material, debug, wave_resolution)
 	local context_name = widget.whInfo.name
 	widget.rmlContext = RmlUi.CreateContext(context_name)
 
-	local default_gravity, _ = get_gravity()
+	local default_gravity = WG["oceanwaves"].get_default_gravity()
 
 	local dm = {
 		ui_minimize = ui_minimize,

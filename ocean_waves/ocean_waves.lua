@@ -58,20 +58,7 @@ elseif is_zero_k then
 	LuaShader = VFS.Include(luaShaderDir.."LuaShader.lua")
 end
 
-local G = 9.80665
-local G2 = G*G
-function default_gravity()
-	G = 9.80665 * Game.gravity / 100
-	G2 = G*G
-end
-function set_gravity(new_gravity)
-	G = new_gravity
-	G2 = G*G
-end
-function get_gravity()
-	return G, G2
-end
-default_gravity()
+G = 9.80665 * Game.gravity / 100
 
 -- we will call these speed ups --
 
@@ -213,6 +200,7 @@ local normal_map
 local Clip = VFS.Include(widget_path .. 'utilities/gl/clipmap.lua')
 local clipmap
 
+local should_rebuild_pipeline = false
 local update_butterfly = true
 local update_spectrum = true
 local update_culling = true
@@ -397,17 +385,6 @@ function as_cacades_std430(cascades)
 		std430[#std430+1] = cascade.spread
 		std430[#std430+1] = 0 -- time
 		std430[#std430+1] = i-1+0.5
-		-- FIXME
-
-		-- local default_dt = 1.0 / 60.0
-		-- local dt
-		-- if last_dt != 0.0 then
-		-- 	dt = default_dt
-		-- else
-		-- 	dt = last_dt
-		-- end
-		-- uploaded_dt = dt
-
 		std430[#std430+1] = cascade.whitecap
 		std430[#std430+1] = last_dt * cascade.foam_amount * 7.5
 		std430[#std430+1] = last_dt * max(0.5, 10.0 - cascade.foam_amount) * 1.5
@@ -416,14 +393,53 @@ function as_cacades_std430(cascades)
 end
 
 local state = {
+	material = default_material,
+
+	gravity = G,
+	gravity2 = G*G,
+
 	wave_resolution = default_wave_resolution,
 	cascades = default_cascades,
 	upload_cascades_ssbo = true,
 	upload_cascades_ubo = true,
 
-	material = default_material,
 	debug = default_debug_settings,
 }
+function state:SetGravity(new_gravity)
+	state.gravity = new_gravity
+	state.gravity2 = new_gravity*new_gravity
+	state:UpdateCascadeGravity()
+	should_rebuild_pipeline = true
+end
+function state:SetDefaultGravity()
+	state:SetGravity(G)
+end
+function state:GetGravity()
+	return state.gravity, state.gravity2
+end
+function state:UpdateCascadeGravity()
+	for i=1, #state.cascades do
+		cascade = state.cascades[i]
+		cascade.fetch_length_G = cascade.fetch_length_m * state.gravity
+		cascade.alpha = 0.076 * pow(cascade.wind_speed2 / cascade.fetch_length_G, 0.22)
+		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
+		cascade.should_generate_spectrum = true
+	end
+	state.upload_cascades_ssbo = true
+end
+function state:CascadesInit()
+	for i=1, #state.cascades do
+		cascade = state.cascades[i]
+		cascade.fetch_length_m = cascade.fetch_length_km * 1e3
+		cascade.fetch_length_G = cascade.fetch_length_m * state.gravity
+		cascade.wind_speed2 = cascade.wind_speed * cascade.wind_speed
+		cascade.wind_fetch = cascade.wind_speed * cascade.fetch_length_m
+		cascade.alpha = 0.076 * pow(cascade.wind_speed2 / cascade.fetch_length_G, 0.22)
+		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
+	end
+end
+state:CascadesInit()
+state:SetDefaultGravity()
 
 function widget:Initialize()
 	SetDrawWater(false)
@@ -436,6 +452,7 @@ function widget:Initialize()
 	init_textures()
 	init_buffers()
 	init_shaders()
+	should_rebuild_pipeline = false
 
 	api = API:Init(state)
 	init_ui()
@@ -448,10 +465,10 @@ function init_cascades()
 		cascade.wind_direction_rad = deg_to_rad(cascade.wind_direction)
 		cascade.wind_speed2 = cascade.wind_speed * cascade.wind_speed
 		cascade.fetch_length_m = cascade.fetch_length_km * 1e3
-		cascade.fetch_length_G = cascade.fetch_length_m * G
+		cascade.fetch_length_G = cascade.fetch_length_m * state.gravity
 		cascade.wind_fetch = cascade.wind_speed * cascade.fetch_length_m
 		cascade.alpha = 0.076 * pow(cascade.wind_speed2 / cascade.fetch_length_G, 0.22)
-		cascade.omega = 22.0 * pow(G2 / cascade.wind_fetch, 0.33333333)
+		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
 	end
 end
 
@@ -581,7 +598,7 @@ function init_shaders()
 		"#define SPECTRUM_MODULTE_TILE_SIZE ("..SPECTRUM_MODULTE_TILE_SIZE..")\n"..
 		"#define UNPACK_TILE_SIZE ("..UNPACK_TILE_SIZE..")\n"..
 
-		"#define G ("..G..")\n"..
+		"#define G ("..state.gravity..")\n"..
 		"#define PI (3.1415926535897932384626433832795)\n"..
 		"#define HALF_PI (1.57079632679)\n"..
 		"#define SQRT2 (1.41421356237)\n"..
@@ -743,6 +760,10 @@ function widget:GamePaused(playerID, isGamePaused)
 end
 
 function widget:DrawGenesis()
+	if should_rebuild_pipeline then
+		rebuild_pipeline()
+		should_rebuild_pipeline = false
+	end
 	if update_culling then
 		clipmap:CullTiles(cull_tiles_comp)
 		update_culling = false
