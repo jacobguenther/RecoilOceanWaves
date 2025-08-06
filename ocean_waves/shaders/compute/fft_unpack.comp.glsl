@@ -44,12 +44,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = UNPACK_TILE_SIZE, local_size_y = UNPACK_TILE_SIZE, local_size_z = 2) in;
 
 struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
+	// vec2 scales; // x: displacement, y: normal
+	float displacement_scale;
+	float normal_scale;
 	float tile_length;
 	float alpha;
 	float peak_frequency;

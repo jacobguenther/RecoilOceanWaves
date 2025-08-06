@@ -44,7 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = WAVE_RES, local_size_y = 1, local_size_z = 1) in;
 
@@ -57,7 +57,9 @@ layout(std430, binding = 7) restrict buffer FFTBuffer {
 };
 
 struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
+	// vec2 scales; // x: displacement, y: normal
+	float displacement_scale;
+	float normal_scale;
 	float tile_length;
 	float alpha;
 	float peak_frequency;
@@ -99,7 +101,7 @@ void main() {
 	ROW_SHARED(col, 0) = DATA_IN(id, spectrum);
 	for (uint stage = 0U; stage < num_stages; ++stage) {
 		barrier();
-		uvec2 buf_idx = uvec2(stage % 2, (stage + 1) % 2); // x=read index, y=write index
+		uvec2 buf_idx = uvec2(stage & 1, (stage + 1) & 1); // x=read index, y=write index
 		vec4 butterfly_data = BUTTERFLY(col, stage);
 
 		uvec2 read_indices = uvec2(floatBitsToUint(butterfly_data.xy));

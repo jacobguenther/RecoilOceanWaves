@@ -136,11 +136,11 @@
 				</select>
 			</div>
 
+			<!-- FIXME: Can't loop cascades and use display: flex? -->
 			<div id="cascades_tab">
-					<!-- FIXME: Can't loop cascades and use display: flex?
-						data-for="cascades"
-						data-vent-click="ui_selecte_cascade({{it_index+1}})"
-					-->
+					<!-- data-for="cascades"> -->
+					<!-- <span>test</span> -->
+					<!-- <button data-event-click="ui_selecte_cascade({{it_index+1}})">Cascade</button> -->
 					<button data-event-click="ui_select_cascade(1)">Cascade 1</button>
 					<button data-event-click="ui_select_cascade(2)">Cascade 2</button>
 					<button data-event-click="ui_select_cascade(3)">Cascade 3</button>

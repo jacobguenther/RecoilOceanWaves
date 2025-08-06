@@ -18,7 +18,7 @@ You should have received a copy of the GNU Affero General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 

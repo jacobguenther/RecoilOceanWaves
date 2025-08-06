@@ -118,10 +118,10 @@ function Texture:new(handle, dimensions, default_unit, format)
 
 	function this:bind_image(unit_override, access_override)
 		local texture_unit = this.default_unit
-		if type(unit_override) == "number" then texture_unit = unit_override end
+		if unit_override then texture_unit = unit_override end
 
 		local access = this.default_access
-		if type(access_override) == "number" then access = access_override end
+		if access_override then access = access_override end
 
 		local level = 0
 		-- FIXME: when the latest Engine gets released set layer to nil
@@ -131,7 +131,7 @@ function Texture:new(handle, dimensions, default_unit, format)
 
 	function this:use_texture(unit_override)
 		local texture_unit = this.default_unit
-		if type(unit_override) == "number" then texture_unit = unit_override end
+		if unit_override then texture_unit = unit_override end
 
 		glTexture(texture_unit, this.handle)
 	end

@@ -41,7 +41,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 

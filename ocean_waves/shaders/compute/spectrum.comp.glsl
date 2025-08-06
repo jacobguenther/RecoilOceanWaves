@@ -44,12 +44,14 @@ SOFTWARE.
 11 June 2025: Jacob Guenther: Use storage buffer in place of push constants
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = SPECTRUM_TILE_SIZE, local_size_y = SPECTRUM_TILE_SIZE, local_size_z = 1) in;
 
 struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
+	// vec2 scales; // x: displacement, y: normal
+	float displacement_scale;
+	float normal_scale;
 	float tile_length;
 	float alpha;
 	float peak_frequency;
@@ -122,7 +124,14 @@ float longuet_higgins_function(in float s, in float theta) {
 }
 
 // Source: Christopher J. Horvath - Empirical Directional Wave Spectra for Computer Graphics
-float hasselmann_directional_spread(in float w, in float w_p, in float wind_speed, in float theta, in float swell, in float angle) {
+float hasselmann_directional_spread(
+	in float w,
+	in float w_p,
+	in float wind_speed,
+	in float theta,
+	in float swell,
+	in float angle)
+{
 	float p = w / w_p;
 	float s = (w <= w_p) ? 6.97*pow(abs(p), 4.06) : 9.77*pow(abs(p), -2.33 - 1.45*(wind_speed*w_p/G - 1.17)); // Shaping parameter
 	float s_xi = 16.0 * tanh(w_p / w) * swell*swell; // Shaping parameter w/ swell

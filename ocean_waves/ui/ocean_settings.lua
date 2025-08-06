@@ -18,13 +18,28 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 local atan2 = math.atan2
 local rad_to_deg = math.deg
 
+local chobbyInterface = false
+function widget:RecvLuaMsg(msg, playerID)
+	if msg:sub(1, 18) == 'LobbyOverlayActive' then
+		chobbyInterface = (msg:sub(1,19) == 'LobbyOverlayActive1')
+		if chobbyInterface then
+			ui.document:Hide()
+		else
+			ui.document:Show()
+		end
+	end
+end
+
 function ui_minimize()
 	ui.dm_handle.should_minimize = not ui.dm_handle.should_minimize
 end
-function ui_toggle_hidden()
+function ui_toggle_hidden(event)
 	if ui.dm_handle.hidden then
 		ui.dm_handle.hidden = false
 		ui.document:Hide()
+		if event then
+			event.current_element:Blur()
+		end
 	else
 		ui.dm_handle.hidden = true
 		ui.document:Show()
@@ -45,12 +60,18 @@ function ui_minimize_section(event, name)
 	end
 end
 
+local squash_fist_wave_resolution = true
 function ui_change_wave_resolution(event)
+	if squash_fist_wave_resolution then
+		squash_fist_wave_resolution = false
+		return
+	end
+
 	local value = tonumber(event.parameters.value)
 	if value == nil then
 		return
 	end
-	rebuild_pipeline(value)
+	WG['oceanwaves'].set_wave_resolution(value)
 end
 
 function ui_material_change(event, id, part)
@@ -59,14 +80,34 @@ function ui_material_change(event, id, part)
 		return
 	end
 	if part == nil then
-		ui.dm.material[id] = value
+		if id == 'alpha' then
+			WG['oceanwaves'].set_water_alpha(value)
+		elseif id == 'foam_alpha' then
+			WG['oceanwaves'].set_foam_alpha(value)
+		elseif id == 'roughness' then
+			WG['oceanwaves'].set_roughness(value)
+		end
 	else
-		ui.dm.material[id][part] = value
+		local color = {}
+		if id == 'water_color' then
+			color = WG['oceanwaves'].get_water_color()
+			color[part] = value
+			WG['oceanwaves'].set_water_color(color.r, color.g, color.b)
+		elseif id == 'foam_color' then
+			color = WG['oceanwaves'].get_foam_color()
+			color[part] = value
+			WG['oceanwaves'].set_foam_color(color.r, color.g, color.b)
+		elseif id == 'subsurface_color' then
+			color = WG['oceanwaves'].get_subsurface_color()
+			color[part] = value
+			WG['oceanwaves'].set_subsurface_color(color.r, color.g, color.b)
+		end
 	end
-	ui.dm.material.update_material = true
 end
 function ui_update_map_wind()
+	-- TODO
 	local wind_speed_x, _, wind_speed_z, wind_strength, wind_dir_x, _, wind_dir_z = Spring.GetWind()
+	-- FIXME
 	local angle = 0
 	-- local angle = rad_to_deg(atan2(wind_dir_z, wind_dir_x)) + 90
 	ui.dm_handle.map_wind_speed_x = wind_speed_x
@@ -81,103 +122,96 @@ function ui_select_cascade(event, e)
 	ui.dm_handle.selected_cascade = e
 end
 function ui_cascade_change_tile_size(event, cascade_id)
-	local tile_length = tonumber(event.parameters.value)
-	if type(tile_length) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].tile_length = tile_length
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_tile_length(cascade_id, value)
 end
 function ui_cascade_change_displacement_scale(event, cascade_id)
-	local displacement_scale = tonumber(event.parameters.value)
-	if type(displacement_scale) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].displacement_scale = displacement_scale
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_displacement_scale(cascade_id, value)
 end
 function ui_cascade_change_normal_scale(event, cascade_id)
-	local normal_scale = tonumber(event.parameters.value)
-	if type(normal_scale) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].normal_scale = normal_scale
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_normal_scale(cascade_id, value)
 end
 function ui_cascade_change_wind_speed(event, cascade_id)
-	local wind_speed = tonumber(event.parameters.value)
-	if type(wind_speed) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].wind_speed = wind_speed
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_wind_speed(cascade_id, value)
 end
 function ui_cascade_change_wind_direction(event, cascade_id)
-	local wind_direction = tonumber(event.parameters.value)
-	if type(wind_direction) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].wind_direction = wind_direction
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_wind_direction(cascade_id, value)
 end
 function ui_cascade_change_fetch_length(event, cascade_id)
-	local fetch_length_km = tonumber(event.parameters.value)
-	if type(fetch_length_km) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].fetch_length_km = fetch_length_km
-	ui.dm.cascades[cascade_id].fetch_length_m = fetch_length_km*1e3
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_fetch_length(cascade_id, value)
 end
 function ui_cascade_change_swell(event, cascade_id)
-	local swell = tonumber(event.parameters.value)
-	if type(swell) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].swell = swell
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_swell(cascade_id, value)
 end
 function ui_cascade_change_spread(event, cascade_id)
-	local spread = tonumber(event.parameters.value)
-	if type(spread) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].spread = spread
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_spread(cascade_id, value)
 end
 function ui_cascade_change_detail(event, cascade_id)
-	local detail = tonumber(event.parameters.value)
-	if type(detail) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].detail = detail
-	ui.dm.cascades[cascade_id].should_generate_spectrum = true
+	WG['oceanwaves'].set_cascade_detail(cascade_id, value)
 end
 function ui_cascade_change_whitecap(event, cascade_id)
-	local whitecap = tonumber(event.parameters.value)
-	if type(whitecap) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].whitecap = whitecap
+	WG['oceanwaves'].set_cascade_whitecap(cascade_id, value)
 end
 function ui_cascade_change_foam_amount(event, cascade_id)
-	local foam_amount = tonumber(event.parameters.value)
-	if type(foam_amount) ~= "number" then
+	local value = tonumber(event.parameters.value)
+	if type(value) ~= "number" then
 		return
 	end
-	ui.dm.cascades[cascade_id].foam_amount = foam_amount
+	WG['oceanwaves'].set_cascade_foam_amount(cascade_id, value)
 end
 
 function ui_debug_change_displacement(event)
+	-- TODO
 	ui.dm_handle.debug.disable_displacement = event.parameters.value == "on"
 	rebuild_pipeline()
 end
 
 function ui_debug_set_primitive_mode(event)
+	-- TODO
 	set_primitive_mode(event.parameters.value)
 end
 
 function ui_debug_coloring(event, select_id)
+	-- TODO
 	local value = event.parameters.value;
 	if value == "none" or value == "lod" or value == "clipmap" or value == "depth" then
 		ui.dm_handle.debug.coloring = value
@@ -190,6 +224,7 @@ function ui_debug_coloring(event, select_id)
 	end
 end
 function ui_debug_update_texture_index(event, for_texture)
+	-- TODO
 	if ui.dm_handle.debug.coloring == for_texture then
 		ui.dm_handle.debug.texture = tonumber(event.parameters.value)
 		rebuild_pipeline()
@@ -197,10 +232,9 @@ function ui_debug_update_texture_index(event, for_texture)
 end
 
 function ui_override_gravity(event, gravity_value_id)
-	Spring.Echo("ui_override_gravity", event.parameters.value)
+	-- TODO
 	if event.parameters.value == "on" then
 		local value = ui.document:GetElementById(gravity_value_id):GetAttribute("value")
-		Spring.Echo("ui_override_gravity", value)
 		local override = tonumber(value)
 		if override then
 			set_gravity(override)
@@ -212,6 +246,7 @@ function ui_override_gravity(event, gravity_value_id)
 	end
 end
 function set_gravity_override_value(event)
+	-- TODO
 	local checked = ui.document:GetElementById("gravity_override"):GetAttribute("checked")
 	if checked ~= nil then
 		local override = tonumber(event.parameters.value)
@@ -307,7 +342,7 @@ function UI:new(data_model_cascades, material, debug, wave_resolution)
 		dm = dm,
 	}
 	function this:Init()
-		local document = widget.rmlContext:LoadDocument("LuaUI/Widgets/ui/ocean_settings.rml", widget)
+		local document = widget.rmlContext:LoadDocument("LuaUI/Widgets/ocean_waves/ui/ocean_settings.rml", widget)
 		if not document then
 			Spring.Echo("Failed to load document")
 			return
@@ -316,7 +351,7 @@ function UI:new(data_model_cascades, material, debug, wave_resolution)
 		this.document:ReloadStyleSheet()
 		this.document:Show()
 	end
-	function this:delete()
+	function this:Delete()
 		widget.rmlContext:RemoveDataModel(this.dm_name)
 		if document then
 			document:Close()

@@ -119,6 +119,9 @@ handle button {
 #cascades_tab button {
 	width: 150dp;
 }
+#cascades_tab span {
+	width: 150dp;
+}
 
 .flex-center-space {
 	display: flex;

@@ -46,7 +46,7 @@ SOFTWARE.
 // From https://github.com/beyond-all-reason/Beyond-All-Reason/blob/master/modelmaterials_gl4/templates/cus_gl4.frag.glsl
 // This shader is Copyright (c) 2025 Beherith (mysterme@gmail.com) and licensed under the MIT License
 
-//__Defines__
+//__DEFINES__
 //__ENGINEUNIFORMBUFFERDEFS__
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
@@ -54,27 +54,10 @@ const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 const float MIN_ROUGHNESS = 0.04;
 const float DEFAULT_F0 = 0.02;
 
-struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
-	float tile_length;
-	float alpha;
-	float peak_frequency;
-	float wind_speed;
-	float angle;
-	float depth;
-	float swell;
-	float detail;
-	float spread;
-	float time;
-	float index;
-	float whitecap;
-	float foam_grow_rate;
-	float foam_decay_rate;
-	// 16 * sizeof(float)
-};
-
-layout(std430, binding=6) restrict readonly buffer Cascade {
-	CascadeParameters cascades[NUM_CASCADES];
+layout (std140, binding=15) uniform CascadeData {
+	vec4 cascade_displacement_scale;
+	vec4 cascade_normal_scale;
+	vec4 cascade_length;
 };
 
 #ifdef DEBUG_COLOR_TEXTURE_DISPLACEMENT
@@ -93,14 +76,9 @@ layout (location = 8) uniform vec4 foam_color;       // rgb, foam_alpha
 layout (location = 9) uniform vec4 subsurface_color; // rgb, roughness
 
 in DataVS {
-	vec2 uv;
-	float wave_height;
-	vec3 world_vertex_position;
-
-	flat float tile_id;
-	flat float tile_rot;
-	flat float tile_scale;
-	flat float tile_layer;
+	vec4 uv_wave_height; // w unused
+	vec4 world_vertex_position_distance;
+	flat vec4 tile; // id, rotation, scale, layer
 } IN;
 
 out vec4 outColor;
@@ -177,61 +155,69 @@ float ComputeSpecularAOFilament(float NoV, float diffuseAO, float roughness2) {
 
 
 void main() {
-	if (IN.uv.x > float(mapSize.x) || IN.uv.y > float(mapSize.y)
-		|| IN.uv.x < 0.0 || IN.uv.y < 0.0)
+	if (IN.uv_wave_height.x > float(mapSize.x) || IN.uv_wave_height.y > float(mapSize.y)
+		|| IN.uv_wave_height.x < 0.0 || IN.uv_wave_height.y < 0.0)
 	{
 		discard;
 	}
 
-	vec3 v = cameraViewInv[3].xyz - IN.world_vertex_position.xyz;
-	float dist = length(v);
+	const vec3 v = cameraViewInv[3].xyz - IN.world_vertex_position_distance.xyz;
 
 	// Read foam and normal information from normal maps.
-	vec3 gradient = vec3(0);
+	vec3 gradient = vec3(0.0);
 	for (uint i = 0U; i < NUM_CASCADES; ++i) {
-		vec2 uv_scale = vec2(1.0 / cascades[i].tile_length);
-		vec3 coords = vec3(IN.uv*uv_scale, float(i));
+		const float uv_scale = 1.0 / cascade_length[i];
+		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(i));
 		// Pixels per meter
-		float ppm = WAVE_RES * min(uv_scale.x, uv_scale.y);
+		const float ppm = WAVE_RES * 0.1 * uv_scale;
+		const vec3 normal_scale = vec3(vec2(cascade_normal_scale[i]), 1.0);
 		// Mix between bicubic and bilinear filtering depending on the world space pixels per meter.
 		// This is dependent on the tile size as well as displacement/normal map resolution.
-		vec4 bilinear = texture(normal_map, coords);
-		vec4 bicubic = texture_bicubic(normal_map, coords);
-		vec3 normal_scale = vec3(cascades[i].scales.yy, 1.0);
-		gradient += mix(bicubic, bilinear, min(1.0, ppm*0.1)).xyw * normal_scale;
+		const vec4 bilinear = texture(normal_map, coords);
+		const vec4 bicubic = texture_bicubic(normal_map, coords);
+		#ifdef TEXTURE_FILTERING_BILINEAR
+			gradient += bilinear.xyw * normal_scale;
+		#endif
+		#ifdef TEXTURE_FILTERING_BICUBIC
+			gradient += bicubic.xyw * normal_scale;
+		#endif
+		#ifdef TEXTURE_FILTERING_DEFAULT
+			gradient += mix(bicubic, bilinear, min(1.0, ppm)).xyw * normal_scale;
+		#endif
 	}
 
-	float foam_factor = smoothstep(0.0, 1.0, gradient.z*0.75);
-	vec3 albedo = mix(water_color.rgb, foam_color.rgb, foam_factor);
+	const float foam_factor = min(
+		smoothstep(0.0, 1.0, gradient.z),
+		1.0 - smoothstep(FOAM_FALLOFF_START, FOAM_FALLOFF_END, IN.world_vertex_position_distance.w)
+	);
 
-	float roughness = clamp(subsurface_color.a, 0.2, 1.0);
-	float metalness = 0.0;
-	float ao_term = 1.0;
+	const vec3 albedo = mix(water_color.rgb, foam_color.rgb, foam_factor);
 
-	float roughness2 = roughness * roughness;
-	float roughness4 = roughness2 * roughness2;
+	const float roughness = clamp(subsurface_color.a, 0.2, 1.0);
+	const float ao_term = 1.0;
 
-	vec3 F0 = vec3(DEFAULT_F0);
-	F0 = mix(F0, albedo, metalness);
-	float reflectance = max(F0.r, max(F0.g, F0.b));
-	vec3 F90 = vec3(clamp(reflectance * 50.0, 1.0, 1.0));
+	const float roughness2 = roughness * roughness;
+	const float roughness4 = roughness2 * roughness2;
 
-	vec3 N = normalize(vec3(-gradient.x, 1.0, -gradient.y));
+	const vec3 F0 = vec3(DEFAULT_F0) * albedo;
+	const float reflectance = max(F0.r, max(F0.g, F0.b));
+	const vec3 F90 = vec3(clamp(reflectance * 50.0, 1.0, 1.0));
+
+	const vec3 N = normalize(vec3(-gradient.x, 1.0, -gradient.y));
 	// L - worldLightDir
-	vec3 L = normalize(sunDir.xyz); //from fragment to light, world space
+	const vec3 L = normalize(sunDir.xyz); //from fragment to light, world space
 	// V - worldCameraDir
-	vec3 V = normalize(v);
+	const vec3 V = normalize(v);
 	// H - worldHalfVec
-	vec3 H = normalize(L + V); //half vector
+	const vec3 H = normalize(L + V); //half vector
 	// R - reflection of worldCameraDir against worldFragNormal
-	vec3 Rv = -reflect(V, N);
+	const vec3 Rv = -reflect(V, N);
 
 	// dot products
-	float NdotLu = dot(N, L);
-	float NdotL = clamp(NdotLu, 1e-5, 1.0);
-	float NdotH = clamp(dot(H, N), 0.0, 1.0);
-	float NdotV = clamp(dot(N, V), 1e-5, 1.0);
-	float VdotH = clamp(dot(V, H), 0.0, 1.0);
+	const float NdotL = clamp(dot(N, L), 1e-5, 1.0);
+	const float NdotH = clamp(dot(H, N), 1e-5, 1.0);
+	const float NdotV = clamp(dot(N, V), 1e-5, 1.0);
+	const float VdotH = clamp(dot(V, H), 1e-5, 1.0);
 
 	// TODO fix subsurface scattering
 	// float VdotN = clamp(dot(V, N), 0.0, 1.0);
@@ -241,7 +227,7 @@ void main() {
 	// float light_mask = smith_masking_shadowing(roughness, NdotV);
 	// float view_mask = smith_masking_shadowing(roughness, NdotL);
 	// const vec3 sss_modifier = subsurface_color.rgb; // vec3(0.9,1.15,0.85); // Subsurface scattering produces a 'greener' color.
-	// float sss_height = 1.0*max(0.0, IN.wave_height - 2.5) * pow(LdotnV, 4.0) * pow(0.5 - 0.5 * LdotN, 3.0);
+	// float sss_height = 1.0*max(0.0, IN.uv_wave_height.z - 2.5) * pow(LdotnV, 4.0) * pow(0.5 - 0.5 * LdotN, 3.0);
 	// float sss_near = 0.5*pow(NdotV, 2.0);
 	// float lambertian = 0.5*NdotL;
 	// vec3 sss_light = mix(
@@ -251,22 +237,22 @@ void main() {
 	// ) * (1.0 - fresnel) * sunDiffuseModel.rgb;
 	// diffuse += sss_light;
 
-	vec2 envBRDF = vec2(0.0);// textureLod(brdfLUT, vec2(NdotV, roughness), 0.0).rg;
+	const vec2 envBRDF = vec2(0.0);// textureLod(brdfLUT, vec2(NdotV, roughness), 0.0).rg;
 
-	vec3 energyCompensation =  clamp(1.0 + F0 * (1.0 / max(envBRDF.x, 1e-5) - 1.0), vec3(1.0), vec3(2.0));
+	const vec3 energyCompensation =  clamp(1.0 + F0 * (1.0 / max(envBRDF.x, 1e-5) - 1.0), vec3(1.0), vec3(2.0));
 
 	vec3 dirContrib = vec3(0.0);
 	vec3 outSpecularColor = vec3(0.0);
 	{
-		vec3 F = FresnelSchlick(F0, F90, VdotH);
-		float Vis = VisibilityOcclusionFast(NdotL, NdotV, roughness2);
-		float D = MicrofacetDistribution(NdotH, roughness4);
+		const vec3 F = FresnelSchlick(F0, F90, VdotH);
+		const float Vis = VisibilityOcclusionFast(NdotL, NdotV, roughness2);
+		const float D = MicrofacetDistribution(NdotH, roughness4);
 
 		// float geometric_attenuation = Vis * 1.0 / (1.0 + light_mask + view_mask);
 
 		outSpecularColor = F * Vis * D /* * PI */;
 
-		float shadowMult = 1.0;
+		const float shadowMult = 1.0;
 		vec3 maxSun = mix(sunSpecularModel.rgb, sunDiffuseModel.rgb, step(dot(sunSpecularModel.rgb, LUMA), dot(sunDiffuseModel.rgb, LUMA)));
 
 		#ifdef SUNMULT
@@ -286,12 +272,12 @@ void main() {
 		// for energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS.
-		vec3 kD = vec3(1.0) - F;
+		const vec3 kD = vec3(1.0) - F;
 
 		// multiply kD by the inverse metalness such that only non-metals
 		// have diffuse lighting, or a linear blend if partly metal (pure metals
 		// have no diffuse light).
-		kD *= 1.0 - metalness;
+		// kD *= 1.0 - metalness;
 
 		// add to outgoing radiance dirContrib
 		dirContrib  = maxSun * (kD * albedo /* PI */) * NdotL * shadowMult;
@@ -299,29 +285,28 @@ void main() {
 	}
 
 	// getSpecularDominantDirection (Filament)
-	Rv = mix(Rv, N, roughness4);
+	// Rv = mix(Rv, N, roughness4);
 
 	vec3 ambientContrib;
-	vec3 iblDiffuse = vec3(0);
-	vec3 iblSpecular = vec3(0);
-	vec3 specular = vec3(0);
+	vec3 iblDiffuse = vec3(0.0);
+	vec3 iblSpecular = vec3(0.0);
+	vec3 specular = vec3(0.0);
 	{
 		// ambient lighting (we now use IBL as the ambient term)
-		vec3 F = FresnelSchlickWithRoughness(F0, F90, VdotH, roughness);
+		const vec3 F = FresnelSchlickWithRoughness(F0, F90, VdotH, roughness);
 
 		//vec3 kS = F;
-		vec3 kD = 1.0 - F;
-		kD *= 1.0 - metalness;
+		const vec3 kD = 1.0 - F;
+		// kD *= 1.0 - metalness;
 
 		iblDiffuse = sunAmbientModel.rgb;
 
-		ao_term = 0.5;
-		vec3 diffuse = iblDiffuse * albedo * ao_term;
+		const vec3 diffuse = iblDiffuse * albedo * ao_term;
 
 		vec3 reflectionColor = vec3(0.0);
 		reflectionColor = mix(reflectionColor, iblSpecular, roughness);
 
-		float aoTermSpec = ComputeSpecularAOFilament(NdotV, ao_term, roughness2);
+		const float aoTermSpec = ComputeSpecularAOFilament(NdotV, ao_term, roughness2);
 		specular = reflectionColor * (F0 * envBRDF.x + F90 * envBRDF.y);
 		specular *= aoTermSpec * energyCompensation;
 
@@ -331,15 +316,15 @@ void main() {
 		(1.0-foam_factor) * water_color.a +
 		foam_factor * foam_color.a;
 	vec3 color = ambientContrib.xyz + dirContrib.xyz;
-	color *= 2.0; // hacks
+	// color *= 2.0; // hacks
 
 	#ifdef DEBUG_COLOR_CLIPMAP
-		uint ilayer = uint(IN.tile_layer);
-		if (ilayer == 0) {
+		uint ulayer = uint(IN.tile.w);
+		if (ulayer == 0) {
 			color = vec3(1.0, 0.0, 0.0);
-		} else if (ilayer % 3 == 1) {
+		} else if (ulayer % 3 == 1) {
 			color = vec3(0.0, 1.0, 0.0);
-		} else if (ilayer % 3 == 2) {
+		} else if (ulayer % 3 == 2) {
 			color = vec3(0.0, 0.0, 1.0);
 		} else {
 			color = vec3(1.0, 0.0, 1.0);
@@ -347,26 +332,26 @@ void main() {
 	#endif
 
 	#ifdef DEBUG_COLOR_TILE_ID
-		color = vec3(IN.tile_id / 15.0);
+		color = vec3(IN.tile.x / 15.0);
 		alpha = 1.0;
 	#endif
 
 	#ifdef DEBUG_COLOR_TEXTURE_DISPLACEMENT
-		vec2 uv_scale = vec2(1.0 / cascades[DEBUG_COLOR_TEXTURE_DISPLACEMENT].tile_length);
-		vec3 coords = vec3(IN.uv*uv_scale, float(DEBUG_COLOR_TEXTURE_DISPLACEMENT));
+		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_DISPLACEMENT]);
+		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(DEBUG_COLOR_TEXTURE_DISPLACEMENT));
 		color = texture(displacement_map, coords).xyz;
 		alpha = 1.0;
 	#endif
 
 	#ifdef DEBUG_COLOR_TEXTURE_NORMAL
-		vec2 uv_scale = vec2(1.0 / cascades[DEBUG_COLOR_TEXTURE_NORMAL].tile_length);
-		vec3 coords = vec3(IN.uv*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
+		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_DISPLACEMENT]);
+		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
 		color = texture(normal_map, coords).xyz;
 		alpha = 1.0;
 	#endif
 
 	#ifdef DEBUG_COLOR_TEXTURE_DEPTH
-		color = vec3(texture(depth_map, vec3(IN.world_vertex_position.xz/mapSize.xy, 0.0)).x, 0.0, 0.0);
+		color = vec3(texture(depth_map, vec3(IN.world_vertex_position_distance.xz/mapSize.xy, 0.0)).x, 0.0, 0.0);
 		alpha = 1.0;
 	#endif
 

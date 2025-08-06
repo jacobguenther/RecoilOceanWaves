@@ -44,12 +44,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//__Defines__
+//__DEFINES__
 
 layout(local_size_x = TRANSPOSE_TILE_SIZE, local_size_y = TRANSPOSE_TILE_SIZE, local_size_z = 1) in;
 
 struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
+	// vec2 scales; // x: displacement, y: normal
+	float displacement_scale;
+	float normal_scale;
 	float tile_length;
 	float alpha;
 	float peak_frequency;
@@ -92,10 +94,10 @@ void main() {
 	uvec3 id = uvec3(gl_GlobalInvocationID.xy, uint(cascade.index));
 	barrier();
 	tile[id_local.y][id_local.x] = DATA_IN(id, spectrum);
-	barrier();
+	// barrier();
 
 	id.xy = id_block.yx * TRANSPOSE_TILE_SIZE + id_local.xy;
 	barrier();
 	DATA_OUT(id, spectrum) = tile[id_local.x][id_local.y];
-	barrier();
+	// barrier();
 }

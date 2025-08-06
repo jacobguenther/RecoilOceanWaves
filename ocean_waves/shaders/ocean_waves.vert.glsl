@@ -43,7 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//__Defines__
+//__DEFINES__
 //__ENGINEUNIFORMBUFFERDEFS__
 
 layout (location = 0) in vec2 coords;
@@ -52,27 +52,33 @@ layout (location = 1) in vec4 instance_data;
 layout (binding=DISPLACEMENT_MAP_BINDING) uniform sampler2DArray displacement_map;
 layout (binding=DEPTH_MAP_BINDING) uniform sampler2D depth_map;
 
-struct CascadeParameters {
-	vec2 scales; // x: displacement, y: normal
-	float tile_length;
-	float alpha;
-	float peak_frequency;
-	float wind_speed;
-	float angle;
-	float depth;
-	float swell;
-	float detail;
-	float spread;
-	float time;
-	float index;
-	float whitecap;
-	float foam_grow_rate;
-	float foam_decay_rate;
-	// 16 * sizeof(float)
-};
+// struct CascadeParameters {
+// 	float displacement_scale;
+// 	float normal_scale;
+// 	float tile_length;
+// 	float alpha;
+// 	float peak_frequency;
+// 	float wind_speed;
+// 	float angle;
+// 	float depth;
+// 	float swell;
+// 	float detail;
+// 	float spread;
+// 	float time;
+// 	float index;
+// 	float whitecap;
+// 	float foam_grow_rate;
+// 	float foam_decay_rate;
+// 	// 16 * sizeof(float)
+// };
+// layout(std430, binding=6) restrict readonly buffer Cascade {
+// 	CascadeParameters cascades[NUM_CASCADES];
+// };
 
-layout(std430, binding=6) restrict readonly buffer Cascade {
-	CascadeParameters cascades[NUM_CASCADES];
+layout (std140, binding=15) uniform CascadeData {
+	vec4 cascade_displacement_scale;
+	vec4 cascade_normal_scale;
+	vec4 cascade_length;
 };
 
 // https://gist.github.com/yiwenl/3f804e80d0930e34a0b33359259b556c
@@ -84,62 +90,60 @@ vec2 rotate2d(vec2 v, float a) {
 }
 
 out DataVS {
-	vec2 uv;
-	float wave_height;
-	vec3 world_vertex_position;
-	flat float tile_id;
-	flat float tile_rot;
-	flat float tile_scale;
-	flat float tile_layer;
+	vec4 uv_wave_height; // w unused
+	vec4 world_vertex_position_distance;
+	flat vec4 tile;
 } OUT;
 
 void main() {
-	float tile_id = instance_data.x;
-	float tile_rot = instance_data.y;
-	float tile_scale = instance_data.z;
-	float tile_layer = instance_data.w;
+	const float tile_id = instance_data.x;
+	const float tile_rot = instance_data.y;
+	const float tile_scale = instance_data.z;
+	const float tile_layer = instance_data.w;
 
-	vec2 tile_offset = (
-			vec2(uint(tile_id) % 4, uint(tile_id) / 4) * vec2(MESH_SIZE, MESH_SIZE)- vec2(MESH_SIZE)*1.5
-		)*float(tile_id!=5);
+	const vec2 tile_offset = (
+			vec2(
+				float(uint(tile_id) % 4) - 1.5,
+				float(uint(tile_id) / 4) - 1.5
+			) * vec2(MESH_SIZE)
+		)*float(tile_id != 5.0);
 
-	vec3 camera_position = cameraViewInv[3].xyz;
-	ivec2 camera_ipos = ivec2(camera_position.xz);
-	vec2 rotated = rotate2d(coords, tile_rot * -(PI/2.0));
-	vec2 uv = (rotated + tile_offset) * tile_scale + vec2(camera_ipos.x-camera_ipos.x%64+32, camera_ipos.y-camera_ipos.y%64+32);
-	vec3 coord = vec3(uv.x, 0.0, uv.y);
-	float dist = distance(coord.xyz, camera_position.xyz);
+	const vec3 camera_position = cameraViewInv[3].xyz;
+	const ivec2 camera_ipos = ivec2(camera_position.xz);
+	const int world_grid_alignment = 128;
+	const int half_world_grid_alignment = world_grid_alignment/2;
+	const vec2 camera_grid_alignment = vec2(
+		camera_ipos.x-camera_ipos.x%world_grid_alignment+half_world_grid_alignment,
+		camera_ipos.y-camera_ipos.y%world_grid_alignment+half_world_grid_alignment
+	);
+	const vec2 local_coords = rotate2d(coords, tile_rot * -HALF_PI);
+
+	const vec2 uv = (local_coords + tile_offset) * tile_scale + camera_grid_alignment;
+	const vec3 coord = vec3(uv.x, 0.0, uv.y);
+
+	const float dist = distance(coord.xyz, camera_position.xyz);
 
 	vec3 displacement = vec3(0.0);
 	for (uint i = 0U; i < NUM_CASCADES; ++i) {
-		vec2 uv_scale = vec2(1.0 / cascades[i].tile_length);
-		vec3 uv_coords = vec3(uv*uv_scale, float(i));
-		float displacement_scale = cascades[i].scales.x;
+		const float tile_length = cascade_length[i];
+		const float displacement_scale = cascade_displacement_scale[i];
+	
+		const vec2 uv_scale = vec2(1.0 / tile_length);
+		const vec3 uv_coords = vec3(uv*uv_scale, float(i));
 		displacement += texture(displacement_map, uv_coords).xyz * displacement_scale;
 	}
 	#ifdef DEBUG_DISABLE_DISPLACEMENT
 		displacement = vec3(0.0);
 	#endif
 
-
-	// FIXME: Have this configurable in meters
-	// Displacement amonut falls off after 4096 gl units
 	// TODO: Dampen displacement when in shallow water
-	const float falloff_distance = 4096;
-	const float falloff_end = 4096;
-	float distance_factor = 1.0 - smoothstep(falloff_distance, falloff_distance+falloff_end, dist);
+	const float distance_factor = 1.0 - smoothstep(DISPLACEMENT_FALLOFF_START, DISPLACEMENT_FALLOFF_END, dist);
 
-	mat4 modelMat = mat4(1.0); // translationMat(vec3(0.0, 0.0, 0.0));
-	vec3 displaced = coord + vec3(displacement.xyz) * distance_factor;
-	vec4 world_vertex_position = modelMat * vec4(displaced, 1.0);
-	vec4 vertex_position = cameraProj * cameraView * world_vertex_position;
+	const vec3 world_vertex_position = coord + displacement * distance_factor;
+	const vec4 vertex_position = cameraViewProj * vec4(world_vertex_position, 1.0);
+
 	gl_Position = vertex_position;
-
-	OUT.uv = uv;
-	OUT.wave_height = displacement.y;
-	OUT.world_vertex_position = world_vertex_position.xyz;
-	OUT.tile_id = tile_id;
-	OUT.tile_rot = tile_rot;
-	OUT.tile_scale = tile_scale;
-	OUT.tile_layer = tile_layer;
+	OUT.uv_wave_height = vec4(uv, displacement.y, 0.0);
+	OUT.world_vertex_position_distance = vec4(world_vertex_position, dist);
+	OUT.tile = instance_data;
 }
