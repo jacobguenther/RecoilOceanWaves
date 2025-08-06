@@ -438,6 +438,19 @@ function state:CascadesInit()
 		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
 	end
 end
+function state:RebuildPipeline()
+	rebuild_pipeline()
+end
+function state:SetPrimitiveMode(mode)
+	state.debug.primitive_mode = mode
+	if mode == "TRIANGLES" then
+		clipmap:SetPrimitiveMode(GL_TRIANGLES)
+	elseif mode == "LINES" then
+		clipmap:SetPrimitiveMode(GL_LINES)
+	elseif mode == "POINTS" then
+		clipmap:SetPrimitiveMode(GL_POINTS)
+	end
+end
 state:CascadesInit()
 state:SetDefaultGravity()
 
@@ -515,15 +528,6 @@ function rebuild_pipeline()
 	init_textures()
 	init_buffers()
 	init_shaders()
-end
-function set_primitive_mode(mode)
-	if mode == "TRIANGLES" then
-		clipmap:SetPrimitiveMode(GL_TRIANGLES)
-	elseif mode == "LINES" then
-		clipmap:SetPrimitiveMode(GL_LINES)
-	elseif mode == "POINTS" then
-		clipmap:SetPrimitiveMode(GL_POINTS)
-	end
 end
 
 function create_depth_map()

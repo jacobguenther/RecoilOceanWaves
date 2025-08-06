@@ -344,7 +344,7 @@ void main() {
 	#endif
 
 	#ifdef DEBUG_COLOR_TEXTURE_NORMAL
-		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_DISPLACEMENT]);
+		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_NORMAL]);
 		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
 		color = texture(normal_map, coords).xyz;
 		alpha = 1.0;

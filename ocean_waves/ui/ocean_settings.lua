@@ -200,34 +200,24 @@ function ui_cascade_change_foam_amount(event, cascade_id)
 end
 
 function ui_debug_change_displacement(event)
-	-- TODO
-	ui.dm_handle.debug.disable_displacement = event.parameters.value == "on"
-	rebuild_pipeline()
+	WG['oceanwaves'].set_debug_enable_displacement(event.parameters.value)
 end
 
 function ui_debug_set_primitive_mode(event)
-	-- TODO
-	set_primitive_mode(event.parameters.value)
+	WG['oceanwaves'].set_debug_primitive_mode(event.parameters.value)
 end
 
-function ui_debug_coloring(event, select_id)
-	-- TODO
-	local value = event.parameters.value;
-	if value == "none" or value == "lod" or value == "clipmap" or value == "depth" then
-		ui.dm_handle.debug.coloring = value
-		rebuild_pipeline()
-	elseif value == "displacement" or value == "normal" or value == "spectrum" then
-		local selection = ui.document:GetElementById(select_id):GetAttribute("value")
-		ui.dm_handle.debug.coloring = value
-		ui.dm_handle.debug.texture = tonumber(selection)
-		rebuild_pipeline()
+function ui_debug_coloring(event, texture_index_elm_id)
+	local coloring = event.parameters.value;
+	local texture_index = nil
+	if texture_index_elm_id then
+		texture_index = ui.document:GetElementById(texture_index_elm_id):GetAttribute("value")
 	end
+	WG['oceanwaves'].set_debug_coloring(coloring, texture_index)
 end
 function ui_debug_update_texture_index(event, for_texture)
-	-- TODO
-	if ui.dm_handle.debug.coloring == for_texture then
-		ui.dm_handle.debug.texture = tonumber(event.parameters.value)
-		rebuild_pipeline()
+	if WG['oceanwaves'].get_debug_coloring() == for_texture then
+		set_debug_coloring(for_texture, event.parameters.value)
 	end
 end
 

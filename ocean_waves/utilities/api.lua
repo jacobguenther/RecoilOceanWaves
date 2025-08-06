@@ -367,6 +367,38 @@ function API:Init(state)
 		end
 	end
 
+	--- /oceanwaves setdebugenabledisplacement enabled
+	---@param enabled string? "on"
+	function set_debug_enable_displacement(enable)
+		state.debug.disable_displacement = enable == "on"
+		state:RebuildPipeline()
+	end
+	--- /oceanwaves setdebugprimitivemode cascade_index value
+	---@param mode string "TRIANGLES" | "LINES" | "POINTS"
+	function set_debug_primitive_mode(mode)
+		state:SetPrimitiveMode(mode)
+	end
+	--- /oceanwaves setdebugcoloring coloring texture_index
+	---@param coloring string "none" | "lod" | "clipmap" | "depth" | "displacement" | "normal" | "spectrum"
+	---@param texture_index number?
+	function set_debug_coloring(coloring, texture_index)
+		if coloring == "none"
+			or coloring == "lod"
+			or coloring == "clipmap"
+			or coloring == "depth"
+			or coloring == "displacement"
+			or coloring == "normal"
+			or coloring == "spectrum"
+		then
+			state.debug.coloring = coloring
+			if texture_index then
+				local index = tonumber(texture_index)
+				state.debug.texture = texture_index
+			end
+			state:RebuildPipeline()
+		end
+	end
+
 	local api = {
 		set_water_color = set_water_color,
 		set_water_alpha = set_water_alpha,
@@ -412,6 +444,12 @@ function API:Init(state)
 		get_cascade_detail = function(cascade_index) return state.cascades[cascade_index].detail end,
 		get_cascade_whitecap = function(cascade_index) return state.cascades[cascade_index].whitecap end,
 		get_cascade_foam_amount = function(cascade_index) return state.cascades[cascade_index].foam_amount end,
+
+		set_debug_enable_displacement = set_debug_enable_displacement,
+		set_debug_primitive_mode = set_debug_primitive_mode,
+		set_debug_coloring = set_debug_coloring,
+
+		get_debug_coloring = function() return state.debug.coloring end,
 	}
 
 	WG['oceanwaves'] = api
