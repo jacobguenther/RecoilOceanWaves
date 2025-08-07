@@ -7,51 +7,51 @@
 </head>
 
 <body>
-<div id="ocean_waves" data-model="ocean_waves_dm">
+<div id="ocean_waves" data-model="Ocean Waves Menu">
 	<handle move_target="#document">
 		<h1>Ocean Waves</h1>
-		<button data-event-click="ui_minimize()">_</button>
-		<button data-event-click="ui_toggle_hidden()">X</button>
+		<button data-event-click="minimize_toggle()">_</button>
+		<button data-event-click="hidden_toggle()">X</button>
 	</handle>
-	<div data-if="should_minimize > 0">
-		<h2 data-event-click="ui_minimize_section('material')" class="collapsable-section-header">Material</h2>
+	<div data-if="document_maximized">
+		<h2 data-event-click="minimize_section_toggle('material')" class="collapsable-section-header">Material</h2>
 		<hr />
-		<div id="material" data-if="material_visible > 0">
+		<div id="material" data-if="material_visible">
 			<div class="flex-center-space">
 				<label>Water Color(rgb)</label>
-				<input type="number" data-attr-value="material.water_color.r" data-event-change="ui_material_change('water_color', 'r')" />
-				<input type="number" data-attr-value="material.water_color.g" data-event-change="ui_material_change('water_color', 'g')" />
-				<input type="number" data-attr-value="material.water_color.b" data-event-change="ui_material_change('water_color', 'b')" />
+				<input type="number" data-attr-value="material.water_color.r" data-event-change="on_material_change('water_color', 'r')" />
+				<input type="number" data-attr-value="material.water_color.g" data-event-change="on_material_change('water_color', 'g')" />
+				<input type="number" data-attr-value="material.water_color.b" data-event-change="on_material_change('water_color', 'b')" />
 			</div>
 			<div class="flex-center-space">
 				<label>Alpha</label>
-				<input type="number" data-attr-value="material.alpha" data-event-change="ui_material_change('alpha')" />
+				<input type="number" data-attr-value="material.alpha" data-event-change="on_material_change('alpha')" />
 			</div>
 			<div class="flex-center-space">
 				<label>Foam Color(rgb)</label>
-				<input type="number" data-attr-value="material.foam_color.r" data-event-change="ui_material_change('foam_color', 'r')" />
-				<input type="number" data-attr-value="material.foam_color.g" data-event-change="ui_material_change('foam_color', 'g')" />
-				<input type="number" data-attr-value="material.foam_color.b" data-event-change="ui_material_change('foam_color', 'b')" />
+				<input type="number" data-attr-value="material.foam_color.r" data-event-change="on_material_change('foam_color', 'r')" />
+				<input type="number" data-attr-value="material.foam_color.g" data-event-change="on_material_change('foam_color', 'g')" />
+				<input type="number" data-attr-value="material.foam_color.b" data-event-change="on_material_change('foam_color', 'b')" />
 			</div>
 			<div class="flex-center-space">
 				<label>Foam Alpha</label>
-				<input type="number" data-attr-value="material.foam_alpha" data-event-change="ui_material_change('foam_alpha')" />
+				<input type="number" data-attr-value="material.foam_alpha" data-event-change="on_material_change('foam_alpha')" />
 			</div>
 			<div class="flex-center-space">
 				<label>Subsurface Color(TODO)</label>
-				<input type="number" data-attr-value="material.subsurface_color.r" data-event-change="ui_material_change('subsurface_color', 'r')" />
-				<input type="number" data-attr-value="material.subsurface_color.g" data-event-change="ui_material_change('subsurface_color', 'g')" />
-				<input type="number" data-attr-value="material.subsurface_color.b" data-event-change="ui_material_change('subsurface_color', 'b')" />
+				<input type="number" data-attr-value="material.subsurface_color.r" data-event-change="on_material_change('subsurface_color', 'r')" />
+				<input type="number" data-attr-value="material.subsurface_color.g" data-event-change="on_material_change('subsurface_color', 'g')" />
+				<input type="number" data-attr-value="material.subsurface_color.b" data-event-change="on_material_change('subsurface_color', 'b')" />
 			</div>
 			<div class="flex-center-space">
 				<label>Roughness</label>
-				<input type="number" data-attr-value="material.roughness" data-event-change="ui_material_change('roughness')" />
+				<input type="number" data-attr-value="material.roughness" data-event-change="on_material_change('roughness')" />
 			</div>
 		</div>
 
-		<h2 data-event-click="ui_minimize_section('wind')" class="collapsable-section-header">Wind</h2>
+		<h2 data-event-click="minimize_section_toggle('wind')" class="collapsable-section-header">Wind</h2>
 		<hr />
-		<div id="map_wind" data-if="wind_visible > 0">
+		<div id="map_wind" data-if="wind_visible">
 			<div id="wind_min_max">
 				<span id="min_wind">min: {{min_wind}}</span>
 				<span id="max_wind">max: {{max_wind}}</span>
@@ -95,9 +95,9 @@
 			</div>
 		</div>
 
-		<h2 data-event-click="ui_minimize_section('gravity')" class="collapsable-section-header">Gravity</h2>
+		<h2 data-event-click="minimize_section_toggle('gravity')" class="collapsable-section-header">Gravity</h2>
 		<hr />
-		<div data-if="gravity_visible > 0">
+		<div data-if="gravity_visible">
 			<div class="flex-center-space">
 				<label>Map Gravity</label>
 				<span>{{map_gravity}}</span>
@@ -107,25 +107,25 @@
 				<label for="gravity_override">Override</label>
 				<input type="checkbox" name="gravity_override"
 						id="gravity_override"
-						data-event-change="ui_override_gravity('gravity_override_value')" />
+						data-event-change="on_override_gravity('gravity_override_value')" />
 				<input type="number" name="gravity_override_value"
 					id="gravity_override_value"
 					size="10"
 					value="9.81"
 					min="0.0001"
 					max="1000"
-					data-event-change="set_gravity_override_value()" />
+					data-event-change="on_gravity_override_value()" />
 			</div>
 		</div>
 
-		<h2 data-event-click="ui_minimize_section('wave')" class="collapsable-section-header">Wave Parameters</h2>
+		<h2 data-event-click="minimize_section_toggle('wave')" class="collapsable-section-header">Wave Parameters</h2>
 		<hr />
-		<div id="wave_parameters" data-if="wave_visible > 0">
+		<div id="wave_parameters" data-if="wave_visible">
 			<div class="flex-center-space">
 				<label for="wave_resolution">Wave Resolution</label>
 				<select id="wave_resolution"
 					name="wave_resolution"
-					data-event-change="ui_change_wave_resolution()"
+					data-event-change="on_wave_resolution_change()"
 				>
 					<option value="256" data-attrif-selected="wave_resolution==256">256x256</option>
 					<option value="512" data-attrif-selected="wave_resolution==512">512x512</option>
@@ -138,9 +138,9 @@
 					<!-- data-for="cascades"> -->
 					<!-- <span>test</span> -->
 					<!-- <button data-event-click="ui_selecte_cascade({{it_index+1}})">Cascade</button> -->
-					<button data-event-click="ui_select_cascade(1)">Cascade 1</button>
-					<button data-event-click="ui_select_cascade(2)">Cascade 2</button>
-					<button data-event-click="ui_select_cascade(3)">Cascade 3</button>
+					<button data-event-click="on_select_cascade(1)">Cascade 1</button>
+					<button data-event-click="on_select_cascade(2)">Cascade 2</button>
+					<button data-event-click="on_select_cascade(3)">Cascade 3</button>
 			</div>
 
 			<div id="cascades" data-for="cascades">
@@ -156,7 +156,7 @@
 							data-attr-value="cascades[it_index].tile_length"
 							min="1"
 							max="1024"
-							data-event-change="ui_cascade_change_tile_size(it_index+1)"/>
+							data-event-change="on_cascade_change_tile_size(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="displacement_scale_cascade">Displacement Scale</label>
@@ -165,7 +165,7 @@
 							name="displacement_scale_cascade"
 							size="10"
 							data-attr-value="cascades[it_index].displacement_scale"
-							data-event-change="ui_cascade_change_displacement_scale(it_index+1)"/>
+							data-event-change="on_cascade_change_displacement_scale(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="normal_scale_cascade">Normal Scale</label>
@@ -174,7 +174,7 @@
 							data-attr-value="cascades[it_index].normal_scale"
 							size="10"
 							value="1.0"
-							data-event-change="ui_cascade_change_normal_scale(it_index+1)"/>
+							data-event-change="on_cascade_change_normal_scale(it_index+1)"/>
 					</div>
 					<hr />
 					<div class="flex-center-space">
@@ -186,7 +186,7 @@
 							data-attr-value="cascades[it_index].wind_speed"
 							min="0.0001"
 							max="1000"
-							data-event-change="ui_cascade_change_wind_speed(it_index+1)"/>
+							data-event-change="on_cascade_change_wind_speed(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="wind_direction_cascade">Wind Direction(deg)</label>
@@ -198,7 +198,7 @@
 							min="-360"
 							max="360"
 							step="10"
-							data-event-change="ui_cascade_change_wind_direction(it_index+1)"/>
+							data-event-change="on_cascade_change_wind_direction(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="fetch_length_cascade">Fetch Length(km)</label>
@@ -209,7 +209,7 @@
 							data-attr-value="cascades[it_index].fetch_length_km"
 							min="0.001"
 							max="10000"
-							data-event-change="ui_cascade_change_fetch_length(it_index+1)"/>
+							data-event-change="on_cascade_change_fetch_length(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="swell_cascade">Swell</label>
@@ -220,7 +220,7 @@
 							data-attr-value="cascades[it_index].swell"
 							min="0"
 							max="2"
-							data-event-change="ui_cascade_change_swell(it_index+1)"/>
+							data-event-change="on_cascade_change_swell(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="spread_cascade">Spread</label>
@@ -231,7 +231,7 @@
 							data-attr-value="cascades[it_index].spread"
 							min="0"
 							max="1"
-							data-event-change="ui_cascade_change_spread(it_index+1)"/>
+							data-event-change="on_cascade_change_spread(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="detail_cascade">Detail</label>
@@ -242,7 +242,7 @@
 							data-attr-value="cascades[it_index].detail"
 							min="0"
 							max="1"
-							data-event-change="ui_cascade_change_detail(it_index+1)"/>
+							data-event-change="on_cascade_change_detail(it_index+1)"/>
 					</div>
 					<hr />
 					<div class="flex-center-space">
@@ -254,7 +254,7 @@
 							data-attr-value="cascades[it_index].whitecap"
 							min="0"
 							max="2"
-							data-event-change="ui_cascade_change_whitecap(it_index+1)"/>
+							data-event-change="on_cascade_change_whitecap(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
 						<label for="foam_amount_cascade">Foam Amount</label>
@@ -265,28 +265,28 @@
 							data-attr-value="cascades[it_index].foam_amount"
 							min="0"
 							max="10"
-							data-event-change="ui_cascade_change_foam_amount(it_index+1)"/>
+							data-event-change="on_cascade_change_foam_amount(it_index+1)"/>
 					</div>
 				</div> <!-- cascade -->
 			</div> <!-- cascades -->
 		</div>
 
-		<h2 data-event-click="ui_minimize_section('debug')" class="collapsable-section-header">Debug</h2>
+		<h2 data-event-click="minimize_section_toggle('debug')" class="collapsable-section-header">Debug</h2>
 		<hr />
-		<div id="debug" data-if="debug_visible > 0">
+		<div id="debug" data-if="debug_visible">
 			<div class="flex-center-space">
 				<label for="debug_disable_displacement">Disable Displacement</label>
 				<input type="checkbox"
 					id="debug_disable_displacement"
 					name="debug_disable_displacement"
-					data-event-change="ui_debug_change_displacement()" />
+					data-event-change="on_debug_change_displacement()" />
 			</div>
 
 			<div class="flex-center-space">
 				<label for="primitive_mode">Primitive Mode</label>
 				<select id="primitive_mode"
 					name="primitive_mode"
-					data-event-change="ui_debug_set_primitive_mode()" >
+					data-event-change="on_debug_set_primitive_mode()" >
 					<option value="TRIANGLES" data-attrif-selected="debug.primitive_mode=='TRIANGLES'">TRIANGLES</option>
 					<option value="LINES" data-attrif-selected="debug.primitive_mode=='LINES'">LINES</option>
 					<option value="POINTS" data-attrif-selected="debug.primitive_mode=='POINTS'">POINTS</option>
@@ -301,7 +301,7 @@
 					<input type="radio" name="debugcolor"
 						id="debug_color_none"
 						value="none" checked 
-						data-event-change="ui_debug_coloring()"
+						data-event-change="on_debug_coloring()"
 					/>
 				</div>
 
@@ -310,7 +310,7 @@
 					<input type="radio" name="debugcolor"
 						id="debug_lod_level"
 						value="lod"
-						data-event-change="ui_debug_coloring()"
+						data-event-change="on_debug_coloring()"
 					/>
 				</div>
 				
@@ -319,7 +319,7 @@
 					<input type="radio" name="debugcolor"
 						id="debug_clipmap_layer"
 						value="clipmap"
-						data-event-change="ui_debug_coloring()"
+						data-event-change="on_debug_coloring()"
 					/>
 				</div>
 				
@@ -328,11 +328,11 @@
 					<input type="radio" name="debugcolor"
 						id="debug_displacement_map"
 						value="displacement"
-						data-event-change="ui_debug_coloring('debug_displacement_map_index')"
+						data-event-change="on_debug_coloring('debug_displacement_map_index')"
 					/>
 					<select id="debug_displacement_map_index"
 						name="debug_displacement_map_index"
-						data-event-change="ui_debug_update_texture_index('displacement')" >
+						data-event-change="on_debug_update_texture_index('displacement')" >
 						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
@@ -344,11 +344,11 @@
 					<input type="radio" name="debugcolor"
 						id="debug_normal_map"
 						value="normal"
-						data-event-change="ui_debug_coloring('debug_normal_map_index')"
+						data-event-change="on_debug_coloring('debug_normal_map_index')"
 					/>
 					<select id="debug_normal_map_index"
 						name="debug_normal_map_index"
-						data-event-change="ui_debug_update_texture_index('normal')" >
+						data-event-change="on_debug_update_texture_index('normal')" >
 						<option value="0" selected>0</option>
 						<option value="1">1</option>
 						<option value="2">2</option>
@@ -360,7 +360,7 @@
 					<input type="radio" name="debugcolor"
 						id="debug_depth"
 						value="depth"
-						data-event-change="ui_debug_coloring()"
+						data-event-change="on_debug_coloring()"
 					/>
 				</div>
 			</form>

@@ -15,8 +15,10 @@ You should have received a copy of the GNU Affero General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>. 
 ]]
 
-local pow = math.pow
+local utilities = VFS.Include('LuaUI/Widgets/ocean_waves/utilities/common.lua')
+local deep_copy = utilities.deep_copy
 
+local pow = math.pow
 
 -- helpers --
 
@@ -109,6 +111,15 @@ function text_command(api, message)
 		elseif command == 'setcascadefoamamount' then
 			local cascade_index, value = match(), match()
 			api.set_cascade_foam_amount(cascade_index, value)
+		elseif command == 'setdebugenabledisplacement' then
+			local value = match()
+			api.command(value)
+		elseif command == 'setdebugprimitivemode' then
+			local value = match()
+			api.set_debug_primitive_mode(value)
+		elseif command == 'setdebugcoloring' then
+			local color, texture_index = match(), match()
+			api.set_debug_coloring(color, texture_index)
 		end
 	end
 end
@@ -406,11 +417,12 @@ function API:Init(state)
 		set_foam_alpha = set_foam_alpha,
 		set_subsurface_color = set_subsurface_color,
 		set_roughness = set_roughness,
-		get_water_color = function() return state.material.water_color end,
+		get_material = function() return deep_copy(state.material) end,
+		get_water_color = function() return deep_copy(state.material.water_color) end,
 		get_water_alpha = function() return state.material.alpha end,
-		get_foam_color = function() return state.material.foam_color end,
+		get_foam_color = function() return deep_copy(state.material.foam_color) end,
 		get_foam_alpha = function() return state.material.foam_alpha end,
-		get_subsurface_color = function() return state.material.subsurface_color end,
+		get_subsurface_color = function() return deep_copy(state.material.subsurface_color) end,
 		get_roughness = function() return state.material.roughness end,
 
 		set_gravity = set_gravity,
@@ -433,6 +445,7 @@ function API:Init(state)
 		set_cascade_whitecap = set_cascade_whitecap,
 		set_cascade_foam_amount = set_cascade_foam_amount,
 
+		get_cascades = function() return deep_copy(state.cascades) end,
 		get_cascade_tile_size = function(cascade_index) return state.cascades[cascade_index].tile_length end,
 		get_cascade_displacement_scale = function(cascade_index) return state.cascades[cascade_index].displacement_scale end,
 		get_cascade_normal_scale = function(cascade_index) return state.cascades[cascade_index].normal_scale end,
@@ -448,7 +461,7 @@ function API:Init(state)
 		set_debug_enable_displacement = set_debug_enable_displacement,
 		set_debug_primitive_mode = set_debug_primitive_mode,
 		set_debug_coloring = set_debug_coloring,
-
+		get_debug = function() return deep_copy(state.debug) end,
 		get_debug_coloring = function() return state.debug.coloring end,
 	}
 

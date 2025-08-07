@@ -24,6 +24,7 @@ function widget:GetInfo()
 		license = 'GNU AGPLv3',
 		layer   = 0,
 		enabled = true,
+		depends = {'gl4'},
 	}
 end
 
@@ -39,12 +40,6 @@ local is_zero_k = game_name:find("^Zero") ~= nil
 if not is_bar and not is_zero_k then
 	Spring.Echo("Game "..game_name.." is not supported")
 	return
-end
-
-local UI = nil
-ui = nil
-if is_bar then
-	UI = VFS.Include(widget_path .. "ui/ocean_settings.lua")
 end
 
 local API = VFS.Include(widget_path .. 'utilities/api.lua')
@@ -65,7 +60,7 @@ G = 9.80665 * Game.gravity / 100
 local abs = math.abs
 local log = math.log
 local max = math.max
-local deg_to_rad = math.rad
+local rad = math.rad
 local pow = math.pow
 
 local GetCameraPosition = Spring.GetCameraPosition
@@ -468,32 +463,19 @@ function widget:Initialize()
 	should_rebuild_pipeline = false
 
 	api = API:Init(state)
-	init_ui()
 end
 
 function init_cascades()
 	for i=1, #state.cascades do
 		local cascade = state.cascades[i]
 		cascade.should_generate_spectrum = true
-		cascade.wind_direction_rad = deg_to_rad(cascade.wind_direction)
+		cascade.wind_direction_rad = rad(cascade.wind_direction)
 		cascade.wind_speed2 = cascade.wind_speed * cascade.wind_speed
 		cascade.fetch_length_m = cascade.fetch_length_km * 1e3
 		cascade.fetch_length_G = cascade.fetch_length_m * state.gravity
 		cascade.wind_fetch = cascade.wind_speed * cascade.fetch_length_m
 		cascade.alpha = 0.076 * pow(cascade.wind_speed2 / cascade.fetch_length_G, 0.22)
 		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
-	end
-end
-
-function init_ui()
-	if is_bar then
-		ui = UI:new(
-			default_cascades,
-			default_material,
-			default_debug_settings,
-			default_wave_resolution
-		)
-		ui:Init()
 	end
 end
 
@@ -626,9 +608,6 @@ function init_shaders()
 
 	local coloring = state.debug.coloring
 	local texture = state.debug.texture
-
-	-- if coloring == "lod" then
-	-- end
 	if coloring == "clipmap" then
 		shader_defines = shader_defines.."#define DEBUG_COLOR_CLIPMAP\n"
 	elseif coloring == "displacement" then
@@ -713,7 +692,6 @@ function init_buffers()
 	update_culling = true
 end
 function widget:Shutdown()
-	if ui and ui.Delete then ui:Delete() end
 	if api and api.Delete then api:Delete() end
 	if clipmap ~= nil then clipmap:Delete() end
 	delete_buffers()
@@ -724,12 +702,6 @@ end
 function widget:Reload(event)
 	widget:Shutdown()
 	widget:Initialize()
-end
-
-function widget:GameFrame()
-	if is_bar then
-		ui_update_map_wind()
-	end
 end
 
 function widget:Update(dt)
