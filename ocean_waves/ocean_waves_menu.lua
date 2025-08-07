@@ -49,16 +49,18 @@ function widget:Initialize()
 	context = RmlUi.GetContext("shared")
 
 	local data_model = {
+		reload_stylesheets = function() document:ReloadStyleSheet() end,
+
 		hidden_toggle = hidden_toggle,
 
 		document_maximized = true,
 		minimize_toggle = minimize_toggle,
 
-		material_visible = false,
+		material_visible = true,
 		wind_visible = false,
 		gravity_visible = false,
-		wave_visible = false,
-		debug_visible = false,
+		wave_visible = true,
+		debug_visible = true,
 		minimize_section_toggle = minimize_section_toggle,
 
 		material =  WG['oceanwaves'].get_material(),
@@ -147,7 +149,7 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function hidden_toggle(event)
-	if hidden then
+	if not hidden then
 		document:Hide()
 		if event then
 			event.current_element:Blur()
@@ -157,7 +159,7 @@ function hidden_toggle(event)
 	end
 end
 function minimize_toggle()
-	dm.should_minimize = not dm.should_minimize
+	dm.document_maximized = not dm.document_maximized
 end
 function minimize_section_toggle(event, section)
 	if section == "material" then
@@ -340,12 +342,14 @@ function on_debug_coloring(event, texture_index_elm_id)
 	local coloring = event.parameters.value;
 	local texture_index = nil
 	if texture_index_elm_id then
-		texture_index = ui.document:GetElementById(texture_index_elm_id):GetAttribute("value")
+		texture_index = document:GetElementById(texture_index_elm_id):GetAttribute("value")
 	end
 	WG['oceanwaves'].set_debug_coloring(coloring, texture_index)
 end
-function on_debug_update_texture_index(event, for_texture)
-	if WG['oceanwaves'].get_debug_coloring() == for_texture then
-		set_debug_coloring(for_texture, event.parameters.value)
+function on_debug_update_texture_index(event, for_shading)
+	local shading = WG['oceanwaves'].get_debug_coloring()
+	if shading == for_shading then
+		local texture_index = event.parameters.value
+		WG['oceanwaves'].set_debug_coloring(shading, texture_index)
 	end
 end

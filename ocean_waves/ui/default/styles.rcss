@@ -1,97 +1,102 @@
-/*
-* Default styles for all the basic elements.
-*/
+/* https://github.com/mupersega/Beyond-All-Reason/blob/master/luaui/RmlWidgets/styles.rcss */
 
-* {
-    box-sizing: border-box;
-    font-family: "Exo 2";
-    font-size: 20px;
+body {
+	font-family: "Exo 2";
+	font-size: 16dp;
+	pointer-events: none;
+	position: relative;
 }
 
-body, div, p, hr, pre,
-h1, h2, h3, h4, h5, h6,
-tabset tabs {
-    display: block;
+div
+{
+	display: block;
 }
 
-h1 {
-    font-size: 2em;
-    margin: .5em 0;
+p
+{
+	display: block;
 }
 
-h2 {
-    font-size: 1.5em;
-    margin: .5em 0;
+h1
+{
+	display: block;
+	font-size: 24dp;
+	font-weight: bold;
 }
 
-h3 {
-    font-size: 1.17em;
-    margin: .5em 0;
+h2
+{
+	display: block;
+	font-size: 20dp;
+	font-weight: bold;
 }
 
-h4 {
-    margin: .5em 0;
+h3
+{
+	display: block;
+	font-size: 18dp;
+	font-weight: bold;
 }
 
-h5 {
-    font-size: .83em;
-    margin: .25em 0;
+em
+{
+	font-style: italic;
 }
 
-h6 {
-    font-size: .75em;
-    margin: .25em 0;
+strong
+{
+	font-weight: bold;
 }
 
-h1, h2, h3, h4,
-h5, h6, strong {
-    font-weight: bold;
+tabset tabs
+{
+	display: block;
 }
 
-em {
-    font-style: italic;
+scrollbarvertical
+{
+	width: 6dp;
 }
 
-pre {
-    white-space: pre;
+slidertrack
+{
+	background-color: rgba(100,100,100, 255);
 }
 
-hr {
-    border-width: 1px;
+sliderbar
+{
+	background-color: rgba(200,200,200, 255);
+	border-radius: 2dp;
 }
 
-table {
-    box-sizing: border-box;
-    display: table;
+sliderbar:hover,
+sliderbar:active
+{
+	background-color: rgba(220,220,255, 255);
 }
 
-tr {
-    box-sizing: border-box;
-    display: table-row;
+sliderarrowdec
+{
+	width: 6dp;
+	height: 6dp;
+	background-color: rgba(100,100,100, 255);
+	border-top-left-radius: 5dp;
+	border-top-right-radius: 5dp;
+	margin-bottom: 2dp;
 }
 
-td {
-    box-sizing: border-box;
-    display: table-cell;
+sliderarrowinc
+{
+	width: 9dp;
+	height: 9dp;
+	background-color: rgba(100,100,100, 255);
+	border-bottom-left-radius: 5dp;
+	border-bottom-right-radius: 5dp;
+	margin-top: 2dp;
 }
 
-col {
-    box-sizing: border-box;
-    display: table-column;
-}
-
-colgroup {
-    display: table-column-group;
-}
-
-thead, tbody, tfoot {
-    display: table-row-group;
-}
-
-handle[size_target] {
-    cursor: nwse-resize;
-}
-
-handle[move_target] {
-    cursor: move;
+sliderarrowinc:hover,
+sliderarrowdec:hover
+{
+	background-color: rgba(150,150,150, 255);
 }

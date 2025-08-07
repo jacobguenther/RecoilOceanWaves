@@ -1,102 +1,127 @@
-body {
+/*
+primary: #FDC04C;
+primary-alpha: #FDC04C80;
+secondary: #FFDB8C;
+secondary-alpha: #FFDB8C80;
+accent: #E6A532;
+accent-alpha: #E6A53280;
+muted: #FFE5A3;
+muted-alpha: #FFE5A380;
+surface: #FFF8E8;
+surface-alpha: #FFF8E880;
+
+dark: #6b7280;
+darker: #282828;
+darkest: #1d1d1d;
+*/
+
+#ocean-waves-menu-widget {
+	pointer-events: auto;
 	width: 600dp;
 	height: auto;
-
 	overflow: hidden;
-
-	background-color: #00145af3;
 }
 
-h1, h2, h3 {
-	/* top | right | bottom | left */
-	padding: 0dp 0dp 0dp 4dp;
-	margin: 0dp;
-}
-handle, h1, #cascades_tab {
-	background-color: black;
-}
-h2 {
-	background-color: #111;
-}
-h3 {
-	background-color: #222;
-}
-
-button {
-	padding-top: 6dp;
-}
-
-select, selectvalue, selectarrow, selectbox,
-option
+button,
+input.submit
 {
-	padding: 0dp;
-	margin: 0dp;
-	decorator: none;
+	display: inline-block;
+
+	font-size: 16dp;
+	padding: 5dp;
+	margin: 1dp;
+	text-align: center;
+	tab-index: auto;
+
+	color: #FDC04C;
+	background-color: #282828;
+}
+button:hover,
+input.submit:hover
+{
+	background-color: #282828;
+	box-shadow: #E6A532 2dp 2dp;
 }
 
-select {
-	display: flex;
-	width: 175dp;
-	height: 25dp;
+input.text
+{
+	box-sizing: border-box;
+	width: 80dp;
+	margin: 0;
+	padding: 0 5dp;
+	line-height: 1.0;
+
+	color: #FDC04C;
+	border-width: 1dp;
+	border-color: #E6A53280;
+	background-color: #282828;
+}
+input.text:hover,
+input.text:active
+{
+	border-color: #E6A532
 }
 
- /* The container element for the selected option. */
-select selectvalue {
-	width: auto;
-	height: 25dp;
-	margin-right: 30dp;
-
-	font-weight: bold;
-
+input.radio,
+input.checkbox
+{
+	width: 12dp;
+	height: 12dp;
+	background-color: #282828;
+	border-color: #FDC04C;
 	border-width: 4dp;
-	border-color: #991416;
-	border-radius: 2dp 0dp 0dp 0dp;
-	background-color: #FFFFFF;
+}
+input.radio {
+	border-radius: 6dp;
 }
 
-/* The button rendered to the right of the value element. */
-select selectarrow {
-	width: 30dp;
-	/* ?? */
-	height: 25dp;
-	decorator: image( selectarrow );
+input.radio:checked,
+input.checkbox:checked
+{
+	background-color: green;
+	border-color: white;
 }
 
-select:hover selectvalue {
-	border-color: #FF5D5D;
+/* https://mikke89.github.io/RmlUiDoc/pages/style_guide.html#drop-down-selection-boxes */
+/* Specify the dimensions of the select element. */
+select {
+	padding: 2dp;
+	height: 16dp;
+	/* box-sizing: border-box; */
+	border: 2dp #E6A53280;
+	display: flex;
+	/* align-items: center; */
+	/* align-items: baseline; */
 }
-select:hover selectarrow {
-	decorator: image( selectarrow-hover );
-}
-
 /*
-The box containing the options. The visibility of this element is toggled when
-the arrow or value elements are clicked on, or when an option is selected.
+Specify the dimensions of the value element within the select element.
+Padding is used to position the value correctly internally.
 */
+select selectvalue {
+	margin:auto;
+}
+
+select selectarrow {
+	width: 16dp;
+	height: 16dp;
+	background-color: black;
+	/* border-right: 2dp black; */
+	/* border-bottom: 2dp black; */
+}
 select selectbox {
-	width: 125dp;
-	height: 75dp;
+	background-color: #282828;
+	border: 2dp #E6A53280;
 }
-selectbox option {
-	height: 25dp;
-	background: #DDDDFF;
+
+select selectbox option:nth-child(even) {
+	background-color: #1d1d1d;
 }
-selectbox option:nth-child(even) {
-	background: #EEEEFF;
-}
-selectbox option:checked {
+select selectbox option:hover {
 	font-weight: bold;
 }
-selectbox option:hover {
-	background: #FF5D5D;
-}
 
-
-#ocean_waves {
-	padding-bottom: 4dp;
-}
-.collapsable-section-header:hover {
-	color: #FF5D5D;
+select:hover selectarrow {
+	transform: rotateZ(45deg);
 }
 
 handle {
@@ -104,11 +129,32 @@ handle {
 	width: 600dp;
 	align-items: center;
 }
+handle[size_target] {
+	cursor: nwse-resize;
+}
+handle[move_target] {
+	cursor: move;
+}
 handle h1 {
 	margin-right: auto;
 }
 handle button {
-	width: 50dp;
+	width: 40dp;
+	padding: 5dp;
+	margin: 2dp;
+	cursor: default !important;
+}
+
+.collapsable-section-header {
+	border-bottom-width: 3dp;
+	border-color: #282828 /* bg-darker */
+}
+.collapsable-section-header:hover {
+	color: #B8941A; /* .text-dark */
+	border-color: #E6A532; /* .text-accent */
+}
+.collapsable-section {
+	padding-left: 20dp;
 }
 
 #cascades_tab {
@@ -116,40 +162,33 @@ handle button {
 	width: 600dp;
 	align-items: center;
 }
-#cascades_tab button {
-	width: 150dp;
-}
-#cascades_tab span {
-	width: 150dp;
-}
 
 .flex-center-space {
 	display: flex;
 	max-width: 600dp;
+	margin-top: 5dp;
+	align-items: center;
 }
 .flex-center-space > label {
 	width: 200dp;
 }
 .flex-center-space > input {
 	max-width: 100dp;
+	margin-right: 20dp;
 }
 .flex-center-space > span {
 	width: 100dp;
-	/* why?? */
-	margin-left: 25dp;
 }
 .flex-center-space > select {
 	width: 125dp;
-	/* why?? */
-	margin-left: 25dp;
 }
 
 #wind_min_max {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	margin-left: 350dp;
+	margin-left: 300dp;
 }
 #wind_min_max * {
-	width: 75dp;
+	width: 100dp;
 }

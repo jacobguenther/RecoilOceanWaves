@@ -2,55 +2,117 @@
 <head>
 	<title>Ocean Waves</title>
 	<link rel="stylesheet" href="default/styles.rcss" type="text/rcss" />
-	<link rel="stylesheet" href="default/invader.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="default/rml-utils.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="default/palette-standard-global.rcss" type="text/rcss" />
+	<link rel="stylesheet" href="default/palette-base.rcss" type="text/rcss" />
+
+	<!-- <link rel="stylesheet" href="default/styles.rcss" type="text/rcss" /> -->
+	<!-- <link rel="stylesheet" href="default/invader.rcss" type="text/rcss" /> -->
+
 	<link rel="stylesheet" href="styles.rcss" type="text/rcss" />
 </head>
 
 <body>
-<div id="ocean_waves" data-model="Ocean Waves Menu">
-	<handle move_target="#document">
-		<h1>Ocean Waves</h1>
+<div id="ocean-waves-menu-widget" data-model="Ocean Waves Menu">
+	<handle class="bg-black" move_target="#document">
+		<h1 class="text-primary">Ocean Waves</h1>
 		<button data-event-click="minimize_toggle()">_</button>
 		<button data-event-click="hidden_toggle()">X</button>
 	</handle>
-	<div data-if="document_maximized">
-		<h2 data-event-click="minimize_section_toggle('material')" class="collapsable-section-header">Material</h2>
+
+	<div class="bg-darkest" data-if="document_maximized">
+		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('material')">Material</h2>
+
 		<hr />
-		<div id="material" data-if="material_visible">
+
+		<div class="collapsable-section" data-if="material_visible">
 			<div class="flex-center-space">
-				<label>Water Color(rgb)</label>
-				<input type="number" data-attr-value="material.water_color.r" data-event-change="on_material_change('water_color', 'r')" />
-				<input type="number" data-attr-value="material.water_color.g" data-event-change="on_material_change('water_color', 'g')" />
-				<input type="number" data-attr-value="material.water_color.b" data-event-change="on_material_change('water_color', 'b')" />
+				<label class="text-secondary">Water Color(rgb)</label>
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.water_color.r"
+					data-event-change="on_material_change('water_color', 'r')" />
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.water_color.g"
+					data-event-change="on_material_change('water_color', 'g')" />
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.water_color.b"
+					data-event-change="on_material_change('water_color', 'b')" />
+			</div>
+
+			<div class="flex-center-space">
+				<label class="text-secondary">Alpha</label>
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.alpha"
+					data-event-change="on_material_change('alpha')" />
+			</div>
+
+			<div class="flex-center-space">
+				<label class="text-secondary">Foam Color(rgb)</label>
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.foam_color.r"
+					data-event-change="on_material_change('foam_color', 'r')" />
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.foam_color.g"
+					data-event-change="on_material_change('foam_color', 'g')" />
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.foam_color.b"
+					data-event-change="on_material_change('foam_color', 'b')" />
 			</div>
 			<div class="flex-center-space">
-				<label>Alpha</label>
-				<input type="number" data-attr-value="material.alpha" data-event-change="on_material_change('alpha')" />
+				<label class="text-secondary">Foam Alpha</label>
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.foam_alpha"
+					data-event-change="on_material_change('foam_alpha')" />
 			</div>
+
 			<div class="flex-center-space">
-				<label>Foam Color(rgb)</label>
-				<input type="number" data-attr-value="material.foam_color.r" data-event-change="on_material_change('foam_color', 'r')" />
-				<input type="number" data-attr-value="material.foam_color.g" data-event-change="on_material_change('foam_color', 'g')" />
-				<input type="number" data-attr-value="material.foam_color.b" data-event-change="on_material_change('foam_color', 'b')" />
+				<label class="text-secondary">Subsurface Color(TODO)</label>
+				<input type="number"
+					min = 0
+					max = 2
+					data-attr-value="material.subsurface_color.r"
+					data-event-change="on_material_change('subsurface_color', 'r')" />
+				<input type="number"
+					min = 0
+					max = 2
+					data-attr-value="material.subsurface_color.g"
+					data-event-change="on_material_change('subsurface_color', 'g')" />
+				<input type="number"
+					min = 0
+					max = 2
+					data-attr-value="material.subsurface_color.b"
+					data-event-change="on_material_change('subsurface_color', 'b')" />
 			</div>
+
 			<div class="flex-center-space">
-				<label>Foam Alpha</label>
-				<input type="number" data-attr-value="material.foam_alpha" data-event-change="on_material_change('foam_alpha')" />
+				<label class="text-secondary">Roughness</label>
+				<input type="number"
+					min = 0
+					max = 1
+					data-attr-value="material.roughness"
+					data-event-change="on_material_change('roughness')" />
 			</div>
+
 			<div class="flex-center-space">
-				<label>Subsurface Color(TODO)</label>
-				<input type="number" data-attr-value="material.subsurface_color.r" data-event-change="on_material_change('subsurface_color', 'r')" />
-				<input type="number" data-attr-value="material.subsurface_color.g" data-event-change="on_material_change('subsurface_color', 'g')" />
-				<input type="number" data-attr-value="material.subsurface_color.b" data-event-change="on_material_change('subsurface_color', 'b')" />
-			</div>
-			<div class="flex-center-space">
-				<label>Roughness</label>
-				<input type="number" data-attr-value="material.roughness" data-event-change="on_material_change('roughness')" />
-			</div>
-			<div class="flex-center-space">
-				<label for="texture_filtering_mode">Texture Filtering</label>
+				<label class="text-secondary">Texture Filtering</label>
 				<select id="texture_filtering_mode"
-					name="texture_filtering_mode"
 					data-event-change="on_texture_filtering_mode()"
 				>
 					<option value="bilinear" data-attrif-selected="material.texture_filtering=='bilinear'">Bilinear</option>
@@ -60,68 +122,71 @@
 			</div>
 		</div>
 
-		<h2 data-event-click="minimize_section_toggle('wind')" class="collapsable-section-header">Wind</h2>
+		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('wind')">Wind</h2>
 		<hr />
-		<div id="map_wind" data-if="wind_visible">
+		<div class="collapsable-section" data-if="wind_visible">
 			<div id="wind_min_max">
-				<span id="min_wind">min: {{min_wind}}</span>
-				<span id="max_wind">max: {{max_wind}}</span>
+				<span class="text-white">min: {{min_wind}}</span>
+				<span class="text-white">max: {{max_wind}}</span>
 			</div>
+
 			<div class="flex-center-space">
-				<label>Wind Speed</label>
-				<span id="map_wind_speed_x">x: {{map_wind_speed_x}}</span>
-				<span id="map_wind_speed_z">z: {{map_wind_speed_z}}</span>
-				<span id="map_wind_strength">{{map_wind_strength}}</span>
+				<label class="text-secondary">Wind Speed</label>
+				<span class="text-white">x: {{map_wind_speed_x}}</span>
+				<span class="text-white">z: {{map_wind_speed_z}}</span>
+				<span class="text-white">{{map_wind_strength}}</span>
 			</div>
+
 			<div class="flex-center-space">
-				<label>Wind Dir</label>
-				<span id="map_wind_dir_x">x: {{map_wind_dir_x}}</span>
-				<span id="map_wind_dir_z">z: {{map_wind_dir_z}}</span>
-				<span id="map_wind_angle">&#x398; {{map_wind_angle}}</span>
+				<label class="text-secondary">Wind Dir</label>
+				<span class="text-white">x: {{map_wind_dir_x}}</span>
+				<span class="text-white">z: {{map_wind_dir_z}}</span>
+				<span class="text-white">&#x398; {{map_wind_angle}}</span>
 			</div>
+
 			<hr />
+
 			<div class="flex-center-space">
-				<label>Override Wind(TODO)</label>
+				<label class="text-secondary">Override Wind(TODO)</label>
 				<input type="checkbox" id="override_wind_checkbox" />
 			</div>
+
 			<div class="flex-center-space">
-				<label>Override Wind Angle(TODO)</label>
+				<label class="text-secondary">Override Wind Angle(TODO)</label>
 				<input type="number"
 					id="override_wind_angle"
 					name="override_wind_angle"
-					size="10"
-					value="0"
 					min="0"
 					max="360" />
 			</div>
+
 			<div class="flex-center-space">
-				<label>Override Wind Strength(TODO)</label>
+				<label class="text-secondary">Override Wind Strength(TODO)</label>
 				<input type="number"
 					id="override_wind_strength"
 					name="override_wind_strength"
-					size="10"
-					value="0"
 					min="0"
-					max="360" />
+					max="100" />
 			</div>
 		</div>
 
-		<h2 data-event-click="minimize_section_toggle('gravity')" class="collapsable-section-header">Gravity</h2>
-		<hr />
-		<div data-if="gravity_visible">
+		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('gravity')">Gravity</h2>
+
+		<div class="collapsable-section" data-if="gravity_visible">
 			<div class="flex-center-space">
-				<label>Map Gravity</label>
-				<span>{{map_gravity}}</span>
-				<span>{{default_gravity}}</span>
+				<label class="text-secondary">Map Gravity</label>
+				<span class="text-white">{{map_gravity}}</span>
+				<span class="text-white">{{default_gravity}}</span>
 			</div>
+
 			<div class="flex-center-space">
-				<label for="gravity_override">Override</label>
-				<input type="checkbox" name="gravity_override"
-						id="gravity_override"
+				<label class="text-secondary">Override</label>
+				<input type="checkbox"
 						data-event-change="on_override_gravity('gravity_override_value')" />
-				<input type="number" name="gravity_override_value"
+				<input type="number"
 					id="gravity_override_value"
-					size="10"
 					value="9.81"
 					min="0.0001"
 					max="1000"
@@ -129,15 +194,13 @@
 			</div>
 		</div>
 
-		<h2 data-event-click="minimize_section_toggle('wave')" class="collapsable-section-header">Wave Parameters</h2>
-		<hr />
-		<div id="wave_parameters" data-if="wave_visible">
+		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('wave')">Wave Parameters</h2>
+
+		<div class="collapsable-section" data-if="wave_visible">
 			<div class="flex-center-space">
-				<label for="wave_resolution">Wave Resolution</label>
-				<select id="wave_resolution"
-					name="wave_resolution"
-					data-event-change="on_wave_resolution_change()"
-				>
+				<label class="text-secondary">Wave Resolution</label>
+				<select data-event-change="on_wave_resolution_change()">
 					<option value="256" data-attrif-selected="wave_resolution==256">256x256</option>
 					<option value="512" data-attrif-selected="wave_resolution==512">512x512</option>
 					<option value="1024" data-attrif-selected="wave_resolution==1024">1024x1024</option>
@@ -156,137 +219,106 @@
 
 			<div id="cascades" data-for="cascades">
 				<div data-if="it_index+1 == selected_cascade" data-attr-id="it_index+1">
-					<h3>Cascade {{it_index+1}}</h3>
+					<h3 class="text-primary">Cascade {{it_index+1}}</h3>
 					<hr />
 					<div class="flex-center-space">
-						<label for="tile_size_cascade">Tile Size(m)</label>
+						<label class="text-secondary">Tile Size(m)</label>
 						<input type="number"
-							id="tile_size_cascade"
-							name="tile_size_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].tile_length"
 							min="1"
 							max="1024"
+							data-attr-value="cascades[it_index].tile_length"
 							data-event-change="on_cascade_change_tile_size(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="displacement_scale_cascade">Displacement Scale</label>
+						<label class="text-secondary">Displacement Scale</label>
 						<input type="number"
-							id="displacement_scale_cascade"
-							name="displacement_scale_cascade"
-							size="10"
 							data-attr-value="cascades[it_index].displacement_scale"
 							data-event-change="on_cascade_change_displacement_scale(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="normal_scale_cascade">Normal Scale</label>
+						<label class="text-secondary">Normal Scale</label>
 						<input type="number"
-							id="normal_scale_cascade"
 							data-attr-value="cascades[it_index].normal_scale"
-							size="10"
-							value="1.0"
 							data-event-change="on_cascade_change_normal_scale(it_index+1)"/>
 					</div>
 					<hr />
 					<div class="flex-center-space">
-						<label for="wind_speed_cascade">Wind Speed(m/s)</label>
+						<label class="text-secondary">Wind Speed(m/s)</label>
 						<input type="number"
-							id="wind_speed_cascade"
-							name="wind_speed_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].wind_speed"
 							min="0.0001"
 							max="1000"
+							data-attr-value="cascades[it_index].wind_speed"
 							data-event-change="on_cascade_change_wind_speed(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="wind_direction_cascade">Wind Direction(deg)</label>
+						<label class="text-secondary">Wind Direction(deg)</label>
 						<input type="number"
-							id="wind_direction_cascade"
-							name="wind_direction_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].wind_direction"
 							min="-360"
 							max="360"
-							step="10"
+							data-attr-value="cascades[it_index].wind_direction"
 							data-event-change="on_cascade_change_wind_direction(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="fetch_length_cascade">Fetch Length(km)</label>
+						<label class="text-secondary">Fetch Length(km)</label>
 						<input type="number"
-							id="fetch_length_cascade"
-							name="fetch_length_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].fetch_length_km"
 							min="0.001"
 							max="10000"
+							data-attr-value="cascades[it_index].fetch_length_km"
 							data-event-change="on_cascade_change_fetch_length(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="swell_cascade">Swell</label>
+						<label class="text-secondary">Swell</label>
 						<input type="number"
-							id="swell_cascade"
-							name="swell_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].swell"
 							min="0"
 							max="2"
+							data-attr-value="cascades[it_index].swell"
 							data-event-change="on_cascade_change_swell(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="spread_cascade">Spread</label>
+						<label class="text-secondary">Spread</label>
 						<input type="number"
-							id="spread_cascade"
-							name="spread_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].spread"
 							min="0"
 							max="1"
+							data-attr-value="cascades[it_index].spread"
 							data-event-change="on_cascade_change_spread(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="detail_cascade">Detail</label>
+						<label class="text-secondary">Detail</label>
 						<input type="number"
-							id="detail_cascade"
-							name="detail_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].detail"
 							min="0"
 							max="1"
+							data-attr-value="cascades[it_index].detail"
 							data-event-change="on_cascade_change_detail(it_index+1)"/>
 					</div>
 					<hr />
 					<div class="flex-center-space">
-						<label for="whitecap_cascade">Whitecap</label>
+						<label class="text-secondary">Whitecap</label>
 						<input type="number"
-							id="whitecap_cascade"
-							name="whitecap_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].whitecap"
 							min="0"
 							max="2"
+							data-attr-value="cascades[it_index].whitecap"
 							data-event-change="on_cascade_change_whitecap(it_index+1)"/>
 					</div>
 					<div class="flex-center-space">
-						<label for="foam_amount_cascade">Foam Amount</label>
+						<label class="text-secondary">Foam Amount</label>
 						<input type="number"
-							id="foam_amount_cascade"
-							name="foam_amount_cascade"
-							size="10"
-							data-attr-value="cascades[it_index].foam_amount"
 							min="0"
 							max="10"
+							data-attr-value="cascades[it_index].foam_amount"
 							data-event-change="on_cascade_change_foam_amount(it_index+1)"/>
 					</div>
 				</div> <!-- cascade -->
 			</div> <!-- cascades -->
 		</div>
 
-		<h2 data-event-click="minimize_section_toggle('debug')" class="collapsable-section-header">Debug</h2>
-		<hr />
-		<div id="debug" data-if="debug_visible">
+		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('debug')">Debug</h2>
+
+		<div class="collapsable-section" data-if="debug_visible">
+			<button data-event-click="reload_stylesheets()">Reload Stylesheets</button>
+
 			<div class="flex-center-space">
-				<label for="debug_disable_displacement">Disable Displacement</label>
+				<label class="text-secondary" for="debug_disable_displacement">Disable Displacement</label>
 				<input type="checkbox"
 					id="debug_disable_displacement"
 					name="debug_disable_displacement"
@@ -294,7 +326,7 @@
 			</div>
 
 			<div class="flex-center-space">
-				<label for="primitive_mode">Primitive Mode</label>
+				<label class="text-secondary" for="primitive_mode">Primitive Mode</label>
 				<select id="primitive_mode"
 					name="primitive_mode"
 					data-event-change="on_debug_set_primitive_mode()" >
@@ -304,20 +336,19 @@
 				</select>
 			</div>
 
-			<h3>Coloring</h3>
-			<hr />
+			<h3 class="text-primary">Shading</h3>
 			<form>
 				<div class="flex-center-space">
-					<label for="debug_color_none">Normal Coloring</label>
+					<label class="text-secondary" for="debug_color_none">Default Shading</label>
 					<input type="radio" name="debugcolor"
 						id="debug_color_none"
-						value="none" checked 
+						value="none" checked
 						data-event-change="on_debug_coloring()"
 					/>
 				</div>
 
 				<div class="flex-center-space">
-					<label for="debug_lod_level">LOD level(TODO)</label>
+					<label class="text-secondary" for="debug_lod_level">LOD level(TODO)</label>
 					<input type="radio" name="debugcolor"
 						id="debug_lod_level"
 						value="lod"
@@ -326,7 +357,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_clipmap_layer" >Clipmap Layer</label>
+					<label class="text-secondary" for="debug_clipmap_layer" >Clipmap Layer</label>
 					<input type="radio" name="debugcolor"
 						id="debug_clipmap_layer"
 						value="clipmap"
@@ -335,7 +366,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_displacement_map">Displacement Map</label>
+					<label class="text-secondary" for="debug_displacement_map">Displacement Map</label>
 					<input type="radio" name="debugcolor"
 						id="debug_displacement_map"
 						value="displacement"
@@ -351,7 +382,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_normal_map">Normal Map</label>
+					<label class="text-secondary" for="debug_normal_map">Normal Map</label>
 					<input type="radio" name="debugcolor"
 						id="debug_normal_map"
 						value="normal"
@@ -367,7 +398,7 @@
 				</div>
 				
 				<div class="flex-center-space">
-					<label for="debug_depth">Depth</label>
+					<label class="text-secondary" for="debug_depth">Depth</label>
 					<input type="radio" name="debugcolor"
 						id="debug_depth"
 						value="depth"

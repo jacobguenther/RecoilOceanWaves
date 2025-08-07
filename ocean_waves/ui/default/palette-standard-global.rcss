@@ -1,0 +1,100 @@
+/* === SPECIAL === */
+.bg-black-semi-alpha { background-color: #060606ba; }
+.text-black-semi-alpha { color: #060606ba; }
+.border-black-semi-alpha { border-color: #060606ba; }
+
+/* === LIGHT GRAY (#e5e7eb) === */
+.bg-light { background-color: #e5e7eb; }
+.text-light { color: #e5e7eb; }
+.border-light { border-color: #e5e7eb; }
+.bg-light-alpha { background-color: #e5e7eb80; }
+.text-light-alpha { color: #e5e7eb80; }
+.border-light-alpha { border-color: #e5e7eb80; }
+
+/* === MEDIUM GRAY (#d1d5db) === */
+.bg-medium { background-color: #d1d5db; }
+.text-medium { color: #d1d5db; }
+.border-medium { border-color: #d1d5db; }
+.bg-medium-alpha { background-color: #d1d5db80; }
+.text-medium-alpha { color: #d1d5db80; }
+.border-medium-alpha { border-color: #d1d5db80; }
+
+/* === DARK GRAY (#6b7280) === */
+.bg-dark { background-color: #6b7280; }
+.text-dark { color: #6b7280; }
+.border-dark { border-color: #6b7280; }
+.bg-dark-alpha { background-color: #6b728080; }
+.text-dark-alpha { color: #6b728080; }
+.border-dark-alpha { border-color: #6b728080; }
+
+/* === BAR METAL (#e0e0e0) === */
+.bg-white { background-color: #e0e0e0; }
+.text-white { color: #e0e0e0; }
+.border-white { border-color: #e0e0e0; }
+.bg-white-alpha { background-color: #e0e0e080; }
+.text-white-alpha { color: #e0e0e080; }
+.border-white-alpha { border-color: #e0e0e080; }
+
+/* === DARKER GRAY (#282828) === */
+.bg-darker { background-color: #282828; }
+.text-darker { color: #282828; }
+.border-darker { border-color: #282828; }
+.bg-darker-alpha { background-color: #28282880; }
+.text-darker-alpha { color: #28282880; }
+.border-darker-alpha { border-color: #28282880; }
+
+/* === DARKEST GRAY (#1d1d1d) === */
+.bg-darkest { background-color: #1d1d1d; }
+.text-darkest { color: #1d1d1d; }
+.border-darkest { border-color: #1d1d1d; }
+.bg-darkest-alpha { background-color: #1d1d1d80; }
+.text-darkest-alpha { color: #1d1d1d80; }
+.border-darkest-alpha { border-color: #1d1d1d80; }
+
+/* === BLACK (#060606) === */
+.bg-black { background-color: #060606; }
+.text-black { color: #060606; }
+.border-black { border-color: #060606; }
+.bg-black-alpha { background-color: #06060680; }
+.text-black-alpha { color: #06060680; }
+.border-black-alpha { border-color: #06060680; }
+
+/* === SUCCESS GREEN (#22c55e) === */
+.bg-success { background-color: #22c55e; }
+.text-success { color: #22c55e; }
+.border-success { border-color: #22c55e; }
+.bg-success-alpha { background-color: #22c55e80; }
+.text-success-alpha { color: #22c55e80; }
+.border-success-alpha { border-color: #22c55e80; }
+
+/* === WARNING YELLOW (#f59e0b) === */
+.bg-warning { background-color: #f59e0b; }
+.text-warning { color: #f59e0b; }
+.border-warning { border-color: #f59e0b; }
+.bg-warning-alpha { background-color: #f59e0b80; }
+.text-warning-alpha { color: #f59e0b80; }
+.border-warning-alpha { border-color: #f59e0b80; }
+
+/* === ERROR RED (#ef4444) === */
+.bg-error { background-color: #ef4444; }
+.text-error { color: #ef4444; }
+.border-error { border-color: #ef4444; }
+.bg-error-alpha { background-color: #ef444480; }
+.text-error-alpha { color: #ef444480; }
+.border-error-alpha { border-color: #ef444480; }
+
+/* === INFO CYAN (#06b6d4) === */
+.bg-info { background-color: #06b6d4; }
+.text-info { color: #06b6d4; }
+.border-info { border-color: #06b6d4; }
+.bg-info-alpha { background-color: #06b6d480; }
+.text-info-alpha { color: #06b6d480; }
+.border-info-alpha { border-color: #06b6d480; }
+
+/* === CONFIRM TEAL (#14b8a6) === */
+.bg-confirm { background-color: #14b8a6; }
+.text-confirm { color: #14b8a6; }
+.border-confirm { border-color: #14b8a6; }
+.bg-confirm-alpha { background-color: #14b8a680; }
+.text-confirm-alpha { color: #14b8a680; }
+.border-confirm-alpha { border-color: #14b8a680; }
