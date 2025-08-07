@@ -39,6 +39,10 @@ local dm_name = nil -- widget.whInfo.name
 
 local hidden = false
 
+local squash_first_texture_filtering_update = true
+local squash_first_wave_res_update = true
+local squash_first_primitive_mode_update = true
+
 local chobbyInterface = false
 
 function widget:Initialize()
@@ -59,6 +63,7 @@ function widget:Initialize()
 
 		material =  WG['oceanwaves'].get_material(),
 		on_material_change = on_material_change,
+		on_texture_filtering_mode = on_texture_filtering_mode,
 
 		min_wind = Game.windMin,
 		max_wind = Game.windMax,
@@ -198,6 +203,14 @@ function on_material_change(event, id, part)
 		end
 	end
 end
+function on_texture_filtering_mode(event)
+	if squash_first_texture_filtering_update then
+		squash_first_texture_filtering_update = false
+	end
+
+	local value = event.parameters.value
+	WG['oceanwaves'].set_texture_filtering(value)
+end
 
 function on_override_gravity(event, gravity_value_id)
 	if event.parameters.value == "on" then
@@ -222,11 +235,12 @@ function on_gravity_override_value(event)
 end
 
 function on_wave_resolution_change(event)
-	local value = tonumber(event.parameters.value)
-	if value ~= dm.wave_resolution then
-		dm.wave_resolution = value
-		WG['oceanwaves'].set_wave_resolution(value)
+	if squash_first_wave_res_update then
+		squash_first_wave_res_update = false
 	end
+
+	local value = tonumber(event.parameters.value)
+	WG['oceanwaves'].set_wave_resolution(value)
 end
 
 function on_select_cascade(event, i)
@@ -316,6 +330,9 @@ function on_debug_change_displacement(event)
 end
 
 function on_debug_set_primitive_mode(event)
+	if squash_first_primitive_mode_update then
+		squash_first_primitive_mode_update = false
+	end
 	WG['oceanwaves'].set_debug_primitive_mode(event.parameters.value)
 end
 

@@ -139,7 +139,7 @@ function API:Init(state)
 			if alpha then
 				state.material.alpha = alpha
 			end
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
 	end
 
@@ -149,7 +149,7 @@ function API:Init(state)
 		local alpha = as_number(a)
 		if alpha then
 			state.material.alpha = alpha
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
 	end
 
@@ -165,7 +165,7 @@ function API:Init(state)
 			if alpha then
 				state.material.foam_alpha = alpha
 			end
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
 	end
 
@@ -175,7 +175,7 @@ function API:Init(state)
 		local alpha = as_number(a)
 		if alpha then
 			state.material.foam_alpha = alpha
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
 	end
 
@@ -187,7 +187,7 @@ function API:Init(state)
 		local color, _ = as_color(r, g, b)
 		if color then
 			state.material.subsurface_color = color
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
 	end
 
@@ -197,8 +197,15 @@ function API:Init(state)
 		local roughness = as_number(new_roughness)
 		if roughness then
 			state.material.roughness = roughness
-			state.material.update_material = true
+			state.material.should_update_material = true
 		end
+	end
+
+	--- /oceanwaves settexturefiltering value
+	---@param value string
+	function set_texture_filtering(value)
+		state.material.texture_filtering = value
+		state:RebuildPipeline()
 	end
 
 	function set_gravity(new_gravity)
@@ -417,6 +424,7 @@ function API:Init(state)
 		set_foam_alpha = set_foam_alpha,
 		set_subsurface_color = set_subsurface_color,
 		set_roughness = set_roughness,
+		set_texture_filtering = set_texture_filtering,
 		get_material = function() return deep_copy(state.material) end,
 		get_water_color = function() return deep_copy(state.material.water_color) end,
 		get_water_alpha = function() return state.material.alpha end,

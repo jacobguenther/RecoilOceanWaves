@@ -47,6 +47,17 @@
 				<label>Roughness</label>
 				<input type="number" data-attr-value="material.roughness" data-event-change="on_material_change('roughness')" />
 			</div>
+			<div class="flex-center-space">
+				<label for="texture_filtering_mode">Texture Filtering</label>
+				<select id="texture_filtering_mode"
+					name="texture_filtering_mode"
+					data-event-change="on_texture_filtering_mode()"
+				>
+					<option value="bilinear" data-attrif-selected="material.texture_filtering=='bilinear'">Bilinear</option>
+					<option value="bicubic" data-attrif-selected="material.texture_filtering=='bicubic'">Bicubic</option>
+					<option value="default" data-attrif-selected="material.texture_filtering=='default'">Mixed</option>
+				</select>
+			</div>
 		</div>
 
 		<h2 data-event-click="minimize_section_toggle('wind')" class="collapsable-section-header">Wind</h2>
@@ -66,7 +77,7 @@
 				<label>Wind Dir</label>
 				<span id="map_wind_dir_x">x: {{map_wind_dir_x}}</span>
 				<span id="map_wind_dir_z">z: {{map_wind_dir_z}}</span>
-				<span id="map_wind_angle">TODO &#x398; {{map_wind_angle}}</span>
+				<span id="map_wind_angle">&#x398; {{map_wind_angle}}</span>
 			</div>
 			<hr />
 			<div class="flex-center-space">
@@ -86,8 +97,8 @@
 			<div class="flex-center-space">
 				<label>Override Wind Strength(TODO)</label>
 				<input type="number"
-					id="override_wind_angle"
-					name="override_wind_angle"
+					id="override_wind_strength"
+					name="override_wind_strength"
 					size="10"
 					value="0"
 					min="0"

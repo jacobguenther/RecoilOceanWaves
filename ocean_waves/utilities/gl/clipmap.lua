@@ -45,11 +45,11 @@ local GL_POINTS = GL.POINTS
 local GL_LINES = GL.LINES
 
 local Clipmap = {}
-function Clipmap:new(size, grid_size, lods)
-	local vbo = generate_plane_vertices(size, grid_size)
+function Clipmap:new(mesh)
+	local vbo = generate_plane_vertices(mesh.size, mesh.grid_count)
 
 	local indices = {}
-	generate_clipmap_center_indices(indices, grid_size)
+	generate_clipmap_center_indices(indices, mesh.grid_count)
 	local lod_info = {
 		max_lod = 10,
 		center = { { base_index=0, index_count=#indices } },
@@ -57,7 +57,7 @@ function Clipmap:new(size, grid_size, lods)
 	}
 	for lod=1, lod_info.max_lod do
 		local base_index = #indices
-		local index_count = gerenate_plane_indices(indices, grid_size, lod)
+		local index_count = gerenate_plane_indices(indices, mesh.grid_count, lod)
 		lod_info.plane[#(lod_info.plane)+1] = {
 			base_index = base_index,
 			index_count = index_count,
@@ -136,8 +136,14 @@ function Clipmap:new(size, grid_size, lods)
 
 		primitive_mode = primitive_mode,
 	}
-	function this:SetPrimitiveMode(primitive_mode)
-		this.primitive_mode = primitive_mode
+	function this:SetPrimitiveMode(mode)
+		if mode == "TRIANGLES" then
+			this.primitive_mode = GL_TRIANGLES
+		elseif mode == "LINES" then
+			this.primitive_mode = GL_LINES
+		elseif mode == "POINTS" then
+			this.primitive_mode = GL_POINTS
+		end
 	end
 	function this:CullTiles(cull_tiles_comp)
 		this.instance_ssbo:BindBufferRange(5, nil, nil, GL_SHADER_STORAGE_BUFFER)
@@ -337,21 +343,21 @@ function generate_clipmap_tile_instance_data(instance_data, layer, visibility)
 	end
 end
 
-function generate_plane_vertices(size, grid_size)
+function generate_plane_vertices(size, grid_count)
 	local center_offset = -size / 2
-	local step_size = size/grid_size
+	local step_size = size/grid_count
 	local vertices = {}
 	local y = center_offset
-	for y_i=0, grid_size do
+	for y_i=0, grid_count do
 		local x = center_offset
-		for x_i=0, grid_size do
+		for x_i=0, grid_count do
 			vertices[#vertices+1] = x
 			vertices[#vertices+1] = y
 			x = x+step_size
 		end
 		y = y+step_size
 	end
-	local vertex_count = (grid_size+1)*(grid_size+1)
+	local vertex_count = (grid_count+1)*(grid_count+1)
 
 	local vbo = glGetVBO(GL_ARRAY_BUFFER, false)
 	vbo:Define(vertex_count, {
@@ -362,14 +368,14 @@ function generate_plane_vertices(size, grid_size)
 	return vbo
 end
 
-function gerenate_plane_indices(indices, grid_size, lod)
+function gerenate_plane_indices(indices, grid_count, lod)
 	local lod_step = pow(2, lod)
-	local index_count = (grid_size/lod_step * grid_size/lod_step) * 6
+	local index_count = (grid_count/lod_step * grid_count/lod_step) * 6
 
-	local end_vertex = grid_size-lod_step
-	local b_step = lod_step*grid_size
+	local end_vertex = grid_count-lod_step
+	local b_step = lod_step*grid_count
 	for row=0, end_vertex, lod_step do
-		local row_offset = row*(grid_size+1)
+		local row_offset = row*(grid_count+1)
 		for col=0, end_vertex, lod_step do
 			local a = row_offset+col
 			local b = a+lod_step
@@ -385,14 +391,14 @@ function gerenate_plane_indices(indices, grid_size, lod)
 	end
 	return index_count
 end
-function generate_clipmap_center_indices(indices, grid_size)
-	local layer_count = grid_size / 2
+function generate_clipmap_center_indices(indices, grid_count)
+	local layer_count = grid_count / 2
 	for layer=1, layer_count do
-		generate_clipmap_center_layer_indices(indices, grid_size, layer)
+		generate_clipmap_center_layer_indices(indices, grid_count, layer)
 	end
 end
-function generate_clipmap_center_layer_indices(indices, grid_size, layer)
-	local layer_count = grid_size / 2
+function generate_clipmap_center_layer_indices(indices, grid_count, layer)
+	local layer_count = grid_count / 2
 	local row_start = layer_count - layer
 	local col_start = row_start
 	local vertex_end = layer*2
@@ -402,12 +408,12 @@ function generate_clipmap_center_layer_indices(indices, grid_size, layer)
 		if y_i~=1 and y_i~=vertex_end then
 			x_step = vertex_end-1
 		end
-		local row_offset = (row_start+y_i-1)*(grid_size+1)
+		local row_offset = (row_start+y_i-1)*(grid_count+1)
 		local col = col_start
 		for x_i=1, vertex_end, x_step do
 			local a = row_offset + col
 			local b = a+1
-			local c = b+grid_size
+			local c = b+grid_count
 			local d = c+1
 			indices[#indices+1] = a
 			indices[#indices+1] = b

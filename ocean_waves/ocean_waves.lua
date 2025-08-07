@@ -55,8 +55,6 @@ end
 
 G = 9.80665 * Game.gravity / 100
 
--- we will call these speed ups --
-
 local abs = math.abs
 local log = math.log
 local max = math.max
@@ -157,6 +155,10 @@ local GL_ALWAYS   = GL.ALWAYS
 local glAlphaTest = gl.AlphaTest
 local glAlphaToCoverage = gl.AlphaToCoverage
 
+local common = VFS.Include(widget_path .. 'utilities/common.lua')
+local deep_copy = common.deep_copy
+local defaults = VFS.Include(widget_path .. 'utilities/defaults.lua')
+
 local ocean_waves_vert_path = widget_path .. 'shaders/ocean_waves.vert.glsl'
 local ocean_waves_frag_path = widget_path .. 'shaders/ocean_waves.frag.glsl'
 local ocean_waves_shader
@@ -197,146 +199,17 @@ local clipmap
 
 local should_rebuild_pipeline = false
 local update_butterfly = true
-local update_spectrum = true
-local update_culling = true
 
+local update_culling = true
 local camera_pos_x, camera_pos_y, camera_pos_z = GetCameraPosition()
 local camera_dir_x, camera_dir_y, camera_dir_z = GetCameraDirection()
 
 local should_create_depth_map = true
 local depth_map_divider = 32
 
--- settings --
-
 local map_size_x = Game.mapSizeX
 local map_size_z = Game.mapSizeZ
-
-local mesh_size = 1024
-local mesh_grid_count = 1024
-local default_wave_resolution = 1024
-local texture_filtering = "bilinear" -- "default" | "bilinear" | "bicubic"
-
-local LOD_STEP = 1024
-local DISPLACEMENT_FALLOFF_START = 2048
-local DISPLACEMENT_FALLOFF_DIST = 4096
-local DISPLACEMENT_FALLOFF_END = DISPLACEMENT_FALLOFF_START+DISPLACEMENT_FALLOFF_DIST
-
-local FOAM_FALLOFF_START = 2048
-local FOAM_FALLOFF_DIST = 4096
-local FOAM_FALLOFF_END = FOAM_FALLOFF_START+FOAM_FALLOFF_DIST
-
-local default_material = {
-	water_color =      {r = 0.20, g = 0.30, b = 0.36},
-	alpha = 0.35,
-
-	foam_color =       {r = 0.73, g = 0.67, b = 0.62},
-	foam_alpha = 0.7,
-
-	subsurface_color = {r = 0.90, g = 1.15, b = 0.85},
-	roughness = 0.65,
-
-	update_material = true
-}
-
-local default_cascades = {
-	{
-		tile_length = 997.0,
-		displacement_scale = 1.0,
-		normal_scale = 1.0,
-
-		wind_speed = 8.0,
-		wind_direction = 45,
-		depth = 40.0,
-		fetch_length_km = 200.0,
-		swell = 0.8,
-		spread = 0.3,
-
-		detail = 1.0,
-		whitecap = 0.5,
-		foam_amount = 4.0,
-		-- foam_grow_rate = 1.0,
-		-- foam_decay_rate = 1.0,
-
-		should_generate_spectrum = true,
-
-		-- math cache
-		wind_direction_rad = nil,
-		wind_speed2 = nil,
-		fetch_length_m = nil,
-		fetch_length_G = nil,
-		wind_fetch = nil,
-		alpha = nil,
-		omega = nil,
-	},
-	{
-		tile_length = 751.0,
-		displacement_scale = 1.0,
-		normal_scale = 1.0,
-
-		wind_speed = 6.0,
-		wind_direction = 40,
-		depth = 40.0,
-		fetch_length_km = 150.0,
-		swell = 0.8,
-		spread = 0.3,
-		detail = 1.0,
-
-		whitecap = 0.5,
-		foam_amount = 4.0,
-		-- foam_grow_rate = 1.0,
-		-- foam_decay_rate = 1.0,
-
-		should_generate_spectrum = true,
-
-		-- math cache
-		wind_direction_rad = nil,
-		wind_speed2 = nil,
-		fetch_length_m = nil,
-		fetch_length_G = nil,
-		wind_fetch = nil,
-		alpha = nil,
-		omega = nil,
-	},
-	{
-		tile_length = 293.0,
-		displacement_scale = 1.0,
-		normal_scale = 1.0,
-
-		wind_speed = 6.0,
-		wind_direction = 40,
-		depth = 40.0,
-		fetch_length_km = 150.0,
-		swell = 0.8,
-		spread = 0.3,
-		detail = 1.0,
-
-		whitecap = 0.5,
-		foam_amount = 4.0,
-		-- foam_grow_rate = 1.0,
-		-- foam_decay_rate = 1.0,
-
-		should_generate_spectrum = true,
-
-		-- math cache
-		wind_direction_rad = nil,
-		wind_speed2 = nil,
-		fetch_length_m = nil,
-		fetch_length_G = nil,
-		wind_fetch = nil,
-		alpha = nil,
-		omega = nil,
-	},
-}
-
-local default_debug_settings = {
-	disable_displacement = false, -- true | false
-	primitive_mode = "TRIANGLES", -- "TRIANGLES" | "LINES" | "POINTS"
-	coloring = "none", -- "none" | "lod" | "clipmap" | "displacement" | "normal" | "spectrum" | "depth"
-	texture_layer = 0,
-}
-
-
--- end settings -- 
+local water_level = GetWaterPlaneLevel()
 
 local NUM_SPECTRA = 4
 local TRANSPOSE_TILE_SIZE = 32
@@ -388,18 +261,33 @@ function as_cacades_std430(cascades)
 end
 
 local state = {
-	material = default_material,
-
 	gravity = G,
 	gravity2 = G*G,
 
-	wave_resolution = default_wave_resolution,
-	cascades = default_cascades,
+	material = nil,
+	mesh = nil,
+
+	wave_resolution = nil,
+	cascades = nil,
+
 	upload_cascades_ssbo = true,
 	upload_cascades_ubo = true,
 
-	debug = default_debug_settings,
+	debug = nil,
 }
+function state:Init(settings)
+	state.material = deep_copy(settings.material)
+	state.material.should_update_material = true
+
+	state.mesh = deep_copy(settings.mesh)
+
+	state.wave_resolution = settings.wave_resolution
+	state.cascades = deep_copy(settings.cascades)
+	state:CascadesInit()
+
+	state.debug = deep_copy(settings.debug)
+end
+
 function state:SetGravity(new_gravity)
 	state.gravity = new_gravity
 	state.gravity2 = new_gravity*new_gravity
@@ -432,27 +320,22 @@ function state:CascadesInit()
 		cascade.alpha = 0.076 * pow(cascade.wind_speed2 / cascade.fetch_length_G, 0.22)
 		cascade.omega = 22.0 * pow(state.gravity2 / cascade.wind_fetch, 0.33333333)
 	end
+	state.upload_cascades_ssbo = true
+	state.upload_cascades_ubo = true
 end
 function state:RebuildPipeline()
 	rebuild_pipeline()
 end
 function state:SetPrimitiveMode(mode)
 	state.debug.primitive_mode = mode
-	if mode == "TRIANGLES" then
-		clipmap:SetPrimitiveMode(GL_TRIANGLES)
-	elseif mode == "LINES" then
-		clipmap:SetPrimitiveMode(GL_LINES)
-	elseif mode == "POINTS" then
-		clipmap:SetPrimitiveMode(GL_POINTS)
-	end
+	clipmap:SetPrimitiveMode(mode)
 end
-state:CascadesInit()
-state:SetDefaultGravity()
 
 function widget:Initialize()
 	SetDrawWater(false)
 
-	clipmap = Clip.Clipmap:new(mesh_size, mesh_grid_count, 1)
+	state:Init(defaults)
+	clipmap = Clip.Clipmap:new(state.mesh)
 
 	init_cascades()
 
@@ -482,8 +365,8 @@ end
 function init_pipeline_values()
 	local wave_resolution = state.wave_resolution
 	num_fft_stages = log(wave_resolution) / log(2)
-	fft_size = wave_resolution*wave_resolution*4*2*#default_cascades
-	butterfly_size = wave_resolution*num_fft_stages*#default_cascades
+	fft_size = wave_resolution*wave_resolution*4*2*#state.cascades
+	butterfly_size = wave_resolution*num_fft_stages*#state.cascades
 
 	butterfly_dispatch_size = wave_resolution/2/64
 	spectrum_dispatch_size = wave_resolution / SPECTRUM_TILE_SIZE
@@ -492,15 +375,17 @@ function init_pipeline_values()
 	unpack_dispatch_size = wave_resolution / UNPACK_TILE_SIZE
 
 	update_butterfly = true
-	update_spectrum = true
 	should_create_depth_map = true
 
-	state.material.update_material = true
+	state.material.should_update_material = true
 	for i=1,#state.cascades do
 		state.cascades[i].should_generate_spectrum = true
 	end
 end
+local rebuild_count = 0
 function rebuild_pipeline()
+	rebuild_count = rebuild_count + 1
+	Spring.Echo("rebuild_count", rebuild_count)
 	delete_buffers()
 	delete_textures()
 	delete_shaders()
@@ -513,7 +398,6 @@ function rebuild_pipeline()
 end
 
 function create_depth_map()
-	local water_level = GetWaterPlaneLevel()
 	local max_depth = water_level
 
 	local depth_data = {}
@@ -563,20 +447,22 @@ function init_shaders()
 		"#define DEPTH_FORMAT_QUALIFIER "..depth_map:format_as_qualifier().."\n"..
 		"#define DEPTH_MAP_BINDING "..depth_map.default_unit.."\n"..
 
-		"#define LOD_STEP ("..LOD_STEP..")\n"..
+		"#define LOD_STEP ("..state.mesh.lod_step_distance..")\n"..
 		"#define MIN_LOD_LEVEL (1)\n"..
 		"#define MAX_LOD_LEVEL (10)\n"..
 
-		"#define DISPLACEMENT_FALLOFF_START ("..DISPLACEMENT_FALLOFF_START..")\n"..
-		"#define DISPLACEMENT_FALLOFF_DIST ("..DISPLACEMENT_FALLOFF_DIST..")\n"..
-		"#define DISPLACEMENT_FALLOFF_END ("..DISPLACEMENT_FALLOFF_END..")\n"..
+		"#define DISPLACEMENT_FALLOFF_START ("..state.mesh.displacement_falloff_start..")\n"..
+		"#define DISPLACEMENT_FALLOFF_DIST ("..state.mesh.displacement_falloff_distance..")\n"..
+		"#define DISPLACEMENT_FALLOFF_END ("..
+			state.mesh.displacement_falloff_start+state.mesh.displacement_falloff_distance..")\n"..
 
-		"#define FOAM_FALLOFF_START ("..FOAM_FALLOFF_START..")\n"..
-		"#define FOAM_FALLOFF_DIST ("..FOAM_FALLOFF_DIST..")\n"..
-		"#define FOAM_FALLOFF_END ("..FOAM_FALLOFF_END..")\n"..
+		"#define FOAM_FALLOFF_START ("..state.material.foam_falloff_start..")\n"..
+		"#define FOAM_FALLOFF_DIST ("..state.material.foam_falloff_distance..")\n"..
+		"#define FOAM_FALLOFF_END ("..
+			state.material.foam_falloff_start+state.material.foam_falloff_distance..")\n"..
 
 		"#define WAVE_RES ("..state.wave_resolution..")\n"..
-		"#define NUM_CASCADES ("..#default_cascades..")\n"..
+		"#define NUM_CASCADES ("..#state.cascades..")\n"..
 		"#define NUM_SPECTRA (4)\n"..
 
 		"#define TRANSPOSE_TILE_SIZE ("..TRANSPOSE_TILE_SIZE..")\n"..
@@ -590,7 +476,7 @@ function init_shaders()
 		"#define SQRT2 (1.41421356237)\n"..
 		"#define EPSILON32 (1e-5)\n"..
 
-		"#define MESH_SIZE ("..mesh_size..")\n"..
+		"#define MESH_SIZE ("..state.mesh.size..")\n"..
 		"#define CLIPMAP_TILE_COUNT ("..clipmap:GetTileCount()..")\n"..
 		engine_uniform_buffer_defs
 
@@ -598,11 +484,12 @@ function init_shaders()
 		shader_defines = shader_defines.."#define DEBUG_DISABLE_DISPLACEMENT\n"
 	end
 
-	if texture_filtering == "default" then
+	Spring.Echo(state.material.texture_filtering)
+	if state.material.texture_filtering == "default" then
 		shader_defines = shader_defines.."#define TEXTURE_FILTERING_DEFAULT\n"
-	elseif texture_filtering == "bilinear" then
+	elseif state.material.texture_filtering == "bilinear" then
 		shader_defines = shader_defines.."#define TEXTURE_FILTERING_BILINEAR\n"
-	elseif texture_filtering == "bicubic" then
+	elseif state.material.texture_filtering == "bicubic" then
 		shader_defines = shader_defines.."#define TEXTURE_FILTERING_BICUBIC\n"
 	end
 
@@ -631,7 +518,7 @@ function init_shaders()
 		Spring.Echo('Ocean Waves Shader: Compilation Failed')
 		widgetHandler:RemoveWidget()
 	end
-	state.material.update_material = true
+	state.material.should_update_material = true
 
 	butterfly_comp = compile_compute_shader(butterfly_comp_path, shader_defines)
 	spectrum_comp = compile_compute_shader(spectrum_comp_path, shader_defines)
@@ -658,9 +545,9 @@ function compile_compute_shader(path, custom_defines)
 end
 function init_textures()
 	local wave_resolution = state.wave_resolution
-	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=#default_cascades}, 0, GL_RGBA16F)
-	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=#default_cascades}, 1, GL_RGBA16F)
-	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=#default_cascades}, 2, GL_RGBA16F)
+	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=#state.cascades}, 0, GL_RGBA16F)
+	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 1, GL_RGBA16F)
+	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 2, GL_RGBA16F)
 	depth_map = Texture:new('depth_map', {x=map_size_x/depth_map_divider, y=map_size_z/depth_map_divider, z=1}, 3, GL_RGBA16F)
 end
 function init_buffers()
@@ -670,7 +557,7 @@ function init_buffers()
 	})
 
 	cascades_ssbo = glGetVBO(GL_SHADER_STORAGE_BUFFER, false)
-	cascades_ssbo:Define(#default_cascades, {
+	cascades_ssbo:Define(#state.cascades, {
 		{id=0, name="cascades", --[[ type=LuaVBOImpl::DEFAULT_BUFF_ATTR_TYPE vec4, ]] size=cascade_size/4}
 	})
 	cascades_ssbo:DumpDefinition()
@@ -688,7 +575,6 @@ function init_buffers()
 	update_butterfly = true
 	state.upload_cascades_ssbo = true
 	state.upload_cascades_ubo = true
-	update_spectrum = true
 	update_culling = true
 end
 function widget:Shutdown()
@@ -765,7 +651,7 @@ function widget:DrawGenesis()
 	end
 
 	if current_cascade_index == 0 then
-		current_cascade_index = #default_cascades-1
+		current_cascade_index = #state.cascades-1
 	else
 		current_cascade_index = current_cascade_index - 1
 	end
@@ -779,8 +665,8 @@ function widget:DrawGenesis()
 	if current_cascade.should_generate_spectrum then
 		cascades_ssbo:BindBufferRange(6, nil, nil, GL_SHADER_STORAGE_BUFFER)
 		glUseShader(spectrum_comp)
-		glDispatchCompute(spectrum_dispatch_size, spectrum_dispatch_size, #default_cascades, nil)
-		for i=1, #default_cascades do
+		glDispatchCompute(spectrum_dispatch_size, spectrum_dispatch_size, #state.cascades, nil)
+		for i=1, #state.cascades do
 			state.cascades[i].should_generate_spectrum = false
 		end
 	end
@@ -809,7 +695,6 @@ function draw_water()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	ocean_waves_shader:Activate()
-	-- cascades_ssbo:BindBufferRange(6, nil, nil, GL_SHADER_STORAGE_BUFFER)
 	displacement_map:use_texture()
 	normal_map:use_texture()
 	depth_map:use_texture()
@@ -817,7 +702,8 @@ function draw_water()
 	-- glTexture(3, 'modelmaterials_gl4/brdf_0.png') -- brdfLUT
 	-- glTexture(4, 'LuaUI/images/noisetextures/noise64_cube_3.dds')
 	-- glTexture(5, 'modelmaterials_gl4/envlut_0.png')
-	if state.material.update_material then
+
+	if state.material.should_update_material then
 		local material = state.material
 		glUniform(7,
 			material.water_color.r,
@@ -837,7 +723,7 @@ function draw_water()
 			material.subsurface_color.b,
 			material.roughness
 		)
-		material.update_material = false
+		material.should_update_material = false
 	end
 
 	if state.upload_cascades_ubo then
@@ -897,7 +783,6 @@ end
 
 function delete_buffers()
 	update_butterfly = false
-	update_spectrum = false
 	update_culling = false
 	state.upload_cascades_ssbo = false
 	state.upload_cascades_ubo = false
@@ -912,7 +797,7 @@ function delete_textures()
 	if displacement_map ~= nil then displacement_map:delete() end
 end
 function delete_shaders()
-	state.material.update_material = false
+	state.material.should_update_material = false
 	if ocean_waves_shader ~= nil then ocean_waves_shader:Delete() end
 	if butterfly_comp ~= nil then glDeleteShader(butterfly_comp) end
 	if spectrum_comp ~= nil then glDeleteShader(spectrum_comp) end
