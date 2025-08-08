@@ -220,6 +220,10 @@ function on_material_change(event, id, part)
 			WG['oceanwaves'].set_foam_alpha(value)
 		elseif id == 'roughness' then
 			WG['oceanwaves'].set_roughness(value)
+		elseif id == 'foam_falloff_start' then
+			WG['oceanwaves'].set_foam_falloff_start(value)
+		elseif id == 'foam_falloff_distance' then
+			WG['oceanwaves'].set_foam_falloff_range(value)
 		end
 	else
 		local color = {}

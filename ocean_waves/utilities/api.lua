@@ -75,9 +75,6 @@ function text_command(api, message)
 			local resolution = match()
 			api.set_wave_resolution(resolution)
 
-		elseif command == 'setcascadetilesize' then
-			local cascade_index, value = match(), match()
-			api.set_cascade_tile_length(cascade_index, value)
 		elseif command == 'setcascadetilelength' then
 			local cascade_index, value = match(), match()
 			api.set_cascade_tile_length(cascade_index, value)
@@ -111,6 +108,7 @@ function text_command(api, message)
 		elseif command == 'setcascadefoamamount' then
 			local cascade_index, value = match(), match()
 			api.set_cascade_foam_amount(cascade_index, value)
+
 		elseif command == 'setdebugenabledisplacement' then
 			local value = match()
 			api.command(value)
@@ -176,6 +174,26 @@ function API:Init(state)
 		if alpha then
 			state.material.foam_alpha = alpha
 			state.material.should_update_material = true
+		end
+	end
+
+	--- /oceanwaves setfoamfalloffstart a
+	---@param a number
+	function set_foam_falloff_start(value)
+		local start = as_number(value)
+		if start then
+			state.material.foam_falloff_start = start
+			state:RebuildPipeline()
+		end
+	end
+
+	--- /oceanwaves setfoamfalloffrange a
+	---@param a number
+	function set_foam_falloff_range(value)
+		local range = as_number(value)
+		if range then
+			state.material.foam_falloff_distance = range
+			state:RebuildPipeline()
 		end
 	end
 
@@ -422,6 +440,8 @@ function API:Init(state)
 		set_water_alpha = set_water_alpha,
 		set_foam_color = set_foam_color,
 		set_foam_alpha = set_foam_alpha,
+		set_foam_falloff_start = set_foam_falloff_start,
+		set_foam_falloff_range = set_foam_falloff_range,
 		set_subsurface_color = set_subsurface_color,
 		set_roughness = set_roughness,
 		set_texture_filtering = set_texture_filtering,
