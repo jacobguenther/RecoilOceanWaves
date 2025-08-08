@@ -22,151 +22,37 @@ darkest: #1d1d1d;
 	overflow: hidden;
 }
 
-button,
-input.submit
-{
-	display: inline-block;
-
-	font-size: 16dp;
-	padding: 5dp;
-	margin: 1dp;
-	text-align: center;
-	tab-index: auto;
-
-	color: #FDC04C;
-	background-color: #282828;
-}
-button:hover,
-input.submit:hover
-{
-	background-color: #282828;
-	box-shadow: #E6A532 2dp 2dp;
-}
-
-input.text
-{
-	box-sizing: border-box;
-	width: 80dp;
-	margin: 0;
-	padding: 0 5dp;
-	line-height: 1.0;
-
-	color: #FDC04C;
-	border-width: 1dp;
-	border-color: #E6A53280;
-	background-color: #282828;
-}
-input.text:hover,
-input.text:active
-{
-	border-color: #E6A532
-}
-
-input.radio,
-input.checkbox
-{
-	width: 12dp;
-	height: 12dp;
-	background-color: #282828;
-	border-color: #FDC04C;
-	border-width: 4dp;
-}
-input.radio {
-	border-radius: 6dp;
-}
-
-input.radio:checked,
-input.checkbox:checked
-{
-	background-color: green;
-	border-color: white;
-}
-
-/* https://mikke89.github.io/RmlUiDoc/pages/style_guide.html#drop-down-selection-boxes */
-/* Specify the dimensions of the select element. */
-select {
-	padding: 2dp;
-	height: 16dp;
-	/* box-sizing: border-box; */
-	border: 2dp #E6A53280;
-	display: flex;
-	/* align-items: center; */
-	/* align-items: baseline; */
-}
-/*
-Specify the dimensions of the value element within the select element.
-Padding is used to position the value correctly internally.
-*/
-select selectvalue {
-	margin:auto;
-}
-
-select selectarrow {
-	width: 16dp;
-	height: 16dp;
-	background-color: black;
-	/* border-right: 2dp black; */
-	/* border-bottom: 2dp black; */
-}
-select selectbox {
-	background-color: #282828;
-	border: 2dp #E6A53280;
-}
-
-select selectbox option:nth-child(even) {
-	background-color: #1d1d1d;
-}
-select selectbox option:hover {
-	font-weight: bold;
-}
-
-select:hover selectarrow {
-	transform: rotateZ(45deg);
-}
-
-handle {
-	display: flex;
-	width: 600dp;
-	align-items: center;
-}
-handle[size_target] {
-	cursor: nwse-resize;
-}
-handle[move_target] {
-	cursor: move;
-}
-handle h1 {
-	margin-right: auto;
-}
-handle button {
-	width: 40dp;
-	padding: 5dp;
-	margin: 2dp;
-	cursor: default !important;
+h1, h2, h3 {
+	padding-top: 5dp;
+	padding-bottom: 5dp;
 }
 
 .collapsable-section-header {
-	border-bottom-width: 3dp;
-	border-color: #282828 /* bg-darker */
+	padding-left: 5dp;
+	border-bottom-width: 2dp;
+	border-color: #FDC04C;
 }
 .collapsable-section-header:hover {
-	color: #B8941A; /* .text-dark */
-	border-color: #E6A532; /* .text-accent */
+	color: #E6A532;
+	border-color: #E6A532;
 }
+
 .collapsable-section {
 	padding-left: 20dp;
+	padding-bottom: 10dp;
 }
 
 #cascades_tab {
 	display: flex;
 	width: 600dp;
+	padding-top: 10dp;
 	align-items: center;
 }
 
 .flex-center-space {
 	display: flex;
 	max-width: 600dp;
-	margin-top: 5dp;
+	padding-top: 10dp;
 	align-items: center;
 }
 .flex-center-space > label {

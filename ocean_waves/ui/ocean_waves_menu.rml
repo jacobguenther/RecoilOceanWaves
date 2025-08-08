@@ -6,9 +6,7 @@
 	<link rel="stylesheet" href="default/palette-standard-global.rcss" type="text/rcss" />
 	<link rel="stylesheet" href="default/palette-base.rcss" type="text/rcss" />
 
-	<!-- <link rel="stylesheet" href="default/styles.rcss" type="text/rcss" /> -->
-	<!-- <link rel="stylesheet" href="default/invader.rcss" type="text/rcss" /> -->
-
+	<link rel="stylesheet" href="input-styles.rcss" type="text/rcss" />
 	<link rel="stylesheet" href="styles.rcss" type="text/rcss" />
 </head>
 
@@ -315,8 +313,6 @@
 			data-event-click="minimize_section_toggle('debug')">Debug</h2>
 
 		<div class="collapsable-section" data-if="debug_visible">
-			<button data-event-click="reload_stylesheets()">Reload Stylesheets</button>
-
 			<div class="flex-center-space">
 				<label class="text-secondary" for="debug_disable_displacement">Disable Displacement</label>
 				<input type="checkbox"
@@ -406,6 +402,7 @@
 					/>
 				</div>
 			</form>
+			<button data-event-click="reload_stylesheets()">Reload Stylesheets</button>
 		</div>
 	</div> <!-- content -->
 </div> <!-- ocean_waves -->

@@ -1,0 +1,167 @@
+button,
+input.submit
+{
+	display: inline-block;
+
+	font-size: 16dp;
+	padding: 5dp;
+	margin: 1dp;
+	text-align: center;
+
+	tab-index: auto;
+
+	/* primary */
+	color: #FDC04C;
+	/* darker */
+	background-color: #282828;
+}
+button:hover,
+button:focus,
+input.submit:hover,
+input.submit:focus
+{
+	/* accent */
+	color: #E6A532;
+	/* accent */
+	box-shadow: #E6A532 2dp 2dp;
+}
+
+input.text
+{
+	box-sizing: border-box;
+	width: 80dp;
+	margin: 0;
+	padding: 0 5dp;
+	line-height: 1.0;
+	/* secondary */
+	color: #FFDB8C;
+	/* darker */
+	background-color: #282828;
+	border-width: 1dp;
+	/* accent-alpha */
+	border-color: #E6A53280;
+}
+input.text:hover,
+input.text:focus,
+input.text:active
+{
+	/* accent */
+	color: #E6A532;
+	/* accent */
+	border-color: #E6A532
+}
+
+input.radio,
+input.checkbox
+{
+	width: 12dp;
+	height: 12dp;
+	/* darker */
+	background-color: #282828;
+	/* secondary */
+	border-color: #FFDB8C;
+	border-width: 3dp;
+}
+input.radio {
+	border-radius: 6dp;
+}
+input.radio:focus,
+input.radio:hover,
+input.checkbox:focus,
+input.checkbox:hover
+{
+	/* accent */
+	border-color: #E6A532;
+}
+input.radio:checked,
+input.checkbox:checked
+{
+	background-color: green;
+	/* accent */
+	border-color: #E6A532;
+}
+
+/* https://mikke89.github.io/RmlUiDoc/pages/style_guide.html#drop-down-selection-boxes */
+select {
+	display: flex;
+
+	height: 16dp;
+	padding: 2dp;
+
+	/* accent-alpha */
+	border-color: #E6A53280;
+	border-width: 1dp;
+}
+select:focus,
+select:active,
+select:hover {
+	/* accent */
+	border-color: #E6A532;
+}
+
+select selectvalue {
+	margin-left: auto;
+	/* secondary */
+	color: #FFDB8C;
+}
+
+select selectarrow {
+	width: 14dp;
+	height: 14dp;
+
+	background-color: black;
+}
+select:focus selectarrow,
+select:hover selectarrow {
+	transform: rotateZ(45deg);
+}
+
+select selectbox {
+	background-color: #282828;
+	/* accent-alpha */
+	border-color: #E6A53280;
+	border-width: 1dp;
+}
+select:focus selectbox,
+select selectbox:hover {
+	/* accent */
+	border-color: #E6A532;
+}
+
+select selectbox option {
+	padding-left: 1dp;
+	/* secondary */
+	color: #FFDB8C;
+}
+select selectbox option:nth-child(even) {
+	/* darkest */
+	background-color: #1d1d1d;
+}
+select selectbox option:hover,
+select selectbox option:focus,
+select selectbox option:checked {
+	font-weight: bold;
+	/* accent */
+	color: #E6A532;
+}
+
+handle {
+	display: flex;
+	width: 600dp;
+	align-items: center;
+}
+handle[size_target] {
+	cursor: nwse-resize;
+}
+handle[move_target] {
+	cursor: move;
+}
+handle h1 {
+	margin-right: auto;
+}
+handle button {
+	width: 35dp;
+	padding: 5dp;
+	margin: 2dp;
+	cursor: default !important;
+}
