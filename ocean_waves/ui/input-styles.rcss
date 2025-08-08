@@ -1,4 +1,49 @@
 button,
+input {
+	/* secondary */
+	color: #FFDB8C;
+	/* darker */
+	background-color: #282828;
+	/* accent-alpha */
+	border-color: #FFDB8C;
+}
+input:hover,
+input:focus,
+input:active,
+input:checked
+{
+	/* accent */
+	color: #E6A532;
+	/* accent */
+	border-color: #E6A532;
+}
+.input-error,
+input.input-error,
+input.input-error:hover,
+input.input-error:focus,
+input.input-error:active
+{
+	color: #FF0000;
+	border-color: #FF0000;
+}
+input:disabled
+{
+	color: #FFDB8C80;
+	background-color: #28282880;
+	border-color: #FFDB8C80;
+}
+
+input.text
+{
+	box-sizing: border-box;
+	width: 80dp;
+	margin: 0;
+	padding: 0 5dp;
+	line-height: 1.0;
+	border-width: 1dp;
+}
+
+button,
 input.submit
 {
 	display: inline-block;
@@ -9,76 +54,32 @@ input.submit
 	text-align: center;
 
 	tab-index: auto;
-
-	/* primary */
-	color: #FDC04C;
-	/* darker */
-	background-color: #282828;
 }
 button:hover,
 button:focus,
+button:active,
 input.submit:hover,
-input.submit:focus
+input.submit:focus,
+input.submit:active
 {
-	/* accent */
-	color: #E6A532;
-	/* accent */
 	box-shadow: #E6A532 2dp 2dp;
 }
 
-input.text
-{
-	box-sizing: border-box;
-	width: 80dp;
-	margin: 0;
-	padding: 0 5dp;
-	line-height: 1.0;
-	/* secondary */
-	color: #FFDB8C;
-	/* darker */
-	background-color: #282828;
-	border-width: 1dp;
-	/* accent-alpha */
-	border-color: #E6A53280;
-}
-input.text:hover,
-input.text:focus,
-input.text:active
-{
-	/* accent */
-	color: #E6A532;
-	/* accent */
-	border-color: #E6A532
-}
 
 input.radio,
 input.checkbox
 {
 	width: 12dp;
 	height: 12dp;
-	/* darker */
-	background-color: #282828;
-	/* secondary */
-	border-color: #FFDB8C;
 	border-width: 3dp;
 }
 input.radio {
 	border-radius: 6dp;
 }
-input.radio:focus,
-input.radio:hover,
-input.checkbox:focus,
-input.checkbox:hover
-{
-	/* accent */
-	border-color: #E6A532;
-}
 input.radio:checked,
 input.checkbox:checked
 {
 	background-color: green;
-	/* accent */
-	border-color: #E6A532;
 }
 
 /* https://mikke89.github.io/RmlUiDoc/pages/style_guide.html#drop-down-selection-boxes */
