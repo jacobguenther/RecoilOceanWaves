@@ -71,10 +71,13 @@ Feedback is welcome!
 
 If you find a bug or have a feature request let me know by opening an [issue](https://github.com/jacobguenther/RecoilOceanWaves/issues) or by finding the [post for this widget](https://discord.com/channels/549281623154229250/1113845509891829810/threads/1387909127233339482) on the [Beyond All Reason Discord](https://discord.com/invite/Q9MtKt48SX) and leave a comment.
 
+## Support
+If you like this project please give this repository a star⭐ and the discord post a positive reaction⚡.
+
 ## Roadmap
 
 ### UI Improvements
-- [ ] Finish UI
+- [ ] MVP Finish UI
 - [X] Hookup change wave resolution
 - [X] Fix Select/Option css
 - [X] Fix Cascade button css
@@ -99,9 +102,9 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [X] Use map gravity, normal or space/moon [#3](/../../issues/3)
 
 ### Settings
-- [ ] Save settings
-- [ ] Save settings per map
-- [ ] Reset to default settings
+- [ ] MVP Save settings
+- [ ] MVP Save settings per map
+- [ ] MVP Reset to default settings
 - [ ] Text commands for all settings
 	- [ ] material
 	- [ ] Wind
@@ -115,9 +118,9 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] lua doc comments
 
 ### Preformance
-- [ ] Use LOD for clipmap tiles
-- [ ] CPU Culling of tiles
-- [ ] GPU culling of tiles
+- [ ] MVP Use LOD for clipmap tiles
+- [ ] CPU Culling of tiles(Future GL3 support?)
+- [ ] MVP GPU culling of tiles[#4](/../../issues/4)
 
 ### MVP Features/Bug Squashing
 - [ ] Fix alpha blending between tiles [#1](/../../issues/1)
@@ -125,6 +128,7 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 - [ ] Dampen displacement in shallow water
 - [ ] Fix Subsurface color
 - [ ] Verify shaders for AMD drivers
+- [ ] Adjustable time scale
 
 ### Future Features
 - [ ] Caustics
@@ -140,6 +144,9 @@ If you find a bug or have a feature request let me know by opening an [issue](ht
 
 ### Code Refactoring
 - [ ] Decouple UI from widget
+
+### Misc
+- [ ] Change license to GPLv2 or later. AGPL and GPLv3 are not compatible with GPLv2 which is what the engine and (most?)games use.
 
 ## License
 All code(.lua, .glsl) files in this repository have the [GNU AGPLv3](LICENSE) license.
