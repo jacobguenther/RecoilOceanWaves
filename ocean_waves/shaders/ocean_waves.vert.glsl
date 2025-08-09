@@ -128,7 +128,7 @@ void main() {
 		const float tile_length = cascade_length[i];
 		const float displacement_scale = cascade_displacement_scale[i];
 	
-		const vec2 uv_scale = vec2(1.0 / tile_length);
+		const float uv_scale = 1.0 / tile_length;
 		const vec3 uv_coords = vec3(uv*uv_scale, float(i));
 		displacement += texture(displacement_map, uv_coords).xyz * displacement_scale;
 	}

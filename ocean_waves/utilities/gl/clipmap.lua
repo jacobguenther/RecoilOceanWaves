@@ -45,13 +45,13 @@ local GL_POINTS = GL.POINTS
 local GL_LINES = GL.LINES
 
 local Clipmap = {}
-function Clipmap:new(mesh)
+function Clipmap:new(mesh, primitive_mode)
 	local vbo = generate_plane_vertices(mesh.size, mesh.grid_count)
 
 	local indices = {}
 	generate_clipmap_center_indices(indices, mesh.grid_count)
 	local lod_info = {
-		max_lod = 10,
+		max_lod = log(mesh.grid_count) / log(2),
 		center = { { base_index=0, index_count=#indices } },
 		plane = {}
 	}
@@ -114,6 +114,8 @@ function Clipmap:new(mesh)
 	local primitive_mode = GL_TRIANGLES
 
 	local this = {
+		mesh_info = mesh,
+
 		lod_info = lod_info,
 		layers_settings = layers_settings,
 
@@ -163,9 +165,9 @@ function Clipmap:new(mesh)
 
 		local MIN_LOD_LEVEL = 1
 		local MAX_LOD_LEVEL = this.lod_info.max_lod
-		local LOD_STEP = 1024;
-		local DISPLACEMENT_FALLOFF_START = 2048
-		local DISPLACEMENT_FALLOFF_DIST = 4096
+		local LOD_STEP = this.mesh_info.lod_step_distance;
+		local DISPLACEMENT_FALLOFF_START = this.mesh_info.displacement_falloff_start
+		local DISPLACEMENT_FALLOFF_DIST = this.mesh_info.displacement_falloff_distance
 		local DISPLACEMENT_FALLOFF_END = DISPLACEMENT_FALLOFF_START+DISPLACEMENT_FALLOFF_DIST
 
 		local previous_lod = nil
@@ -223,6 +225,7 @@ function Clipmap:new(mesh)
 					break
 				end
 			else
+				-- copy direnctly from gpu
 				if visible_count > 0 then
 					bin = {
 						lod = lod,
@@ -230,8 +233,6 @@ function Clipmap:new(mesh)
 						base_instance = base_instance,
 					}
 					lod_bins[#lod_bins+1] = bin
-				-- else
-				-- 	break
 				end
 			end
 		end
@@ -256,6 +257,9 @@ function Clipmap:new(mesh)
 
 	function this:Draw()
 		this:DrawCenter()
+		if not this.lod_bins then
+			return
+		end
 		for i=1, #this.lod_bins do
 			local bin = this.lod_bins[i]
 			this:DrawBin(bin)

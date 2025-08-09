@@ -326,6 +326,27 @@ end
 function state:RebuildPipeline()
 	rebuild_pipeline()
 end
+function state:RebuildClipmap()
+	clipmap:Delete()
+	clipmap = Clip.Clipmap:new(state.mesh)
+	clipmap:SetPrimitiveMode(state.debug.primitive_mode)
+	update_culling = true
+end
+function state:SetMeshSize(mesh_size)
+	state.mesh.size = mesh_size
+	state:RebuildPipeline()
+	state:RebuildClipmap()
+end
+function state:SetMeshGridCount(mesh_grid_count)
+	state.mesh.grid_count = mesh_grid_count
+	state:RebuildPipeline()
+	state:RebuildClipmap()
+end
+function state:SetLodStepDistance(lod_step_distance)
+	state.mesh.lod_step_distance = lod_step_distance
+	state:RebuildPipeline()
+	state:RebuildClipmap()
+end
 function state:SetPrimitiveMode(mode)
 	state.debug.primitive_mode = mode
 	clipmap:SetPrimitiveMode(mode)
@@ -336,6 +357,7 @@ function widget:Initialize()
 
 	state:Init(defaults)
 	clipmap = Clip.Clipmap:new(state.mesh)
+	clipmap:SetPrimitiveMode(state.debug.primitive_mode)
 
 	init_cascades()
 
@@ -382,10 +404,7 @@ function init_pipeline_values()
 		state.cascades[i].should_generate_spectrum = true
 	end
 end
-local rebuild_count = 0
 function rebuild_pipeline()
-	rebuild_count = rebuild_count + 1
-	Spring.Echo("rebuild_count", rebuild_count)
 	delete_buffers()
 	delete_textures()
 	delete_shaders()
@@ -484,7 +503,6 @@ function init_shaders()
 		shader_defines = shader_defines.."#define DEBUG_DISABLE_DISPLACEMENT\n"
 	end
 
-	Spring.Echo(state.material.texture_filtering)
 	if state.material.texture_filtering == "default" then
 		shader_defines = shader_defines.."#define TEXTURE_FILTERING_DEFAULT\n"
 	elseif state.material.texture_filtering == "bilinear" then
@@ -560,7 +578,7 @@ function init_buffers()
 	cascades_ssbo:Define(#state.cascades, {
 		{id=0, name="cascades", --[[ type=LuaVBOImpl::DEFAULT_BUFF_ATTR_TYPE vec4, ]] size=cascade_size/4}
 	})
-	cascades_ssbo:DumpDefinition()
+	-- cascades_ssbo:DumpDefinition()
 
 	fft_ssbo = glGetVBO(GL_SHADER_STORAGE_BUFFER, false)
 	fft_ssbo:Define(fft_size/2, {
@@ -575,7 +593,6 @@ function init_buffers()
 	update_butterfly = true
 	state.upload_cascades_ssbo = true
 	state.upload_cascades_ubo = true
-	update_culling = true
 end
 function widget:Shutdown()
 	if api and api.Delete then api:Delete() end
@@ -602,7 +619,7 @@ function widget:Update(dt)
 
 	local new_pos_x, new_pos_y, new_pos_z = GetCameraPosition()
 	local new_dir_x, new_dir_y, new_dir_z = GetCameraDirection()
-	update_culling =
+	update_culling = update_culling or
 		camera_pos_x ~= new_pos_x or camera_pos_y ~= new_pos_y or camera_pos_z ~= new_pos_z or
 		camera_dir_x ~= new_dir_x or camera_dir_y ~= new_dir_y or camera_dir_z ~= new_dir_z
 	if update_culling then
@@ -626,15 +643,15 @@ function widget:DrawGenesis()
 		rebuild_pipeline()
 		should_rebuild_pipeline = false
 	end
-	if update_culling then
-		clipmap:CullTiles(cull_tiles_comp)
-		update_culling = false
-	end
 	if isPaused then
 		return
 	end
 	if should_create_depth_map then
 		create_depth_map()
+	end
+	if update_culling then
+		clipmap:CullTiles(cull_tiles_comp)
+		update_culling = false
 	end
 
 	butterfly_factors_ssbo:BindBufferRange(5, nil, nil, GL_SHADER_STORAGE_BUFFER)
@@ -771,7 +788,6 @@ function widget:CameraRotationChanged(rotx, roty, rotz)
 end
 
 function widget:ViewResize(vsx, vsy)
-	-- Spring.Echo("ViewResize", vsx, vsy)
 	update_culling = true
 end
 
@@ -783,7 +799,6 @@ end
 
 function delete_buffers()
 	update_butterfly = false
-	update_culling = false
 	state.upload_cascades_ssbo = false
 	state.upload_cascades_ubo = false
 	if butterfly_factors_ssbo ~= nil then butterfly_factors_ssbo:Delete() end

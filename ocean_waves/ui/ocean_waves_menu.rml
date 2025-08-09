@@ -89,16 +89,19 @@
 			<div class="flex-center-space">
 				<label class="text-secondary">Subsurface Color(TODO)</label>
 				<input type="number"
+					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.r"
 					data-event-change="on_material_change('subsurface_color', 'r')" />
 				<input type="number"
+					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.g"
 					data-event-change="on_material_change('subsurface_color', 'g')" />
 				<input type="number"
+					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.b"
@@ -127,6 +130,55 @@
 		</div>
 
 		<h2 class="text-primary bg-darker collapsable-section-header"
+			data-event-click="minimize_section_toggle('mesh')">Mesh</h2>
+
+		<div class="collapsable-section" data-if="mesh_visible">
+			<div class="flex-center-space">
+				<label class="text-secondary">Mesh Size(m)</label>
+				<select data-event-change="on_mesh_size_change()">
+					<option value="128" data-attrif-selected="mesh.size==128">128x128</option>
+					<option value="256" data-attrif-selected="mesh.size==256">256x256</option>
+					<option value="512" data-attrif-selected="mesh.size==512">512x512</option>
+					<option value="1024" data-attrif-selected="mesh.size==1024">1024x1024</option>
+				</select>
+			</div>
+
+			<div class="flex-center-space">
+				<label class="text-secondary">Mesh Grid Count(Quads)</label>
+				<select data-event-change="on_mesh_grid_count_change()">
+					<option value="128" data-attrif-selected="mesh.grid_count==128">128x128</option>
+					<option value="256" data-attrif-selected="mesh.grid_count==256">256x256</option>
+					<option value="512" data-attrif-selected="mesh.grid_count==512">512x512</option>
+					<option value="1024" data-attrif-selected="mesh.grid_count==1024">1024x1024</option>
+				</select>
+			</div>
+
+			<div class="flex-center-space">
+				<label class="text-secondary">Displacement Falloff Start</label>
+				<input type="number"
+					min = 0
+					data-attr-value="mesh.displacement_falloff_start"
+					data-event-change="on_material_change('displacement_falloff_start')" />
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Displacement Falloff Range</label>
+				<input type="number"
+					min = 0
+					data-attr-value="mesh.displacement_falloff_distance"
+					data-event-change="on_material_change('displacement_falloff_distance')" />
+			</div>
+
+			<div class="flex-center-space">
+				<label class="text-secondary">LOD Step Distance</label>
+				<input type="number"
+					disabled
+					min = 0
+					data-attr-value="mesh.lod_step_distance"
+					data-event-change="on_material_change('lod_step_distance')" />
+			</div>
+		</div>
+
+		<h2 class="text-primary bg-darker collapsable-section-header"
 			data-event-click="minimize_section_toggle('wind')">Wind</h2>
 		<div class="collapsable-section" data-if="wind_visible">
 			<div id="wind_min_max">
@@ -150,7 +202,9 @@
 
 			<div class="flex-center-space">
 				<label class="text-secondary">Override Wind(TODO)</label>
-				<input type="checkbox" id="override_wind_checkbox" />
+				<input type="checkbox"
+					id="override_wind_checkbox"
+					disabled />
 			</div>
 
 			<div class="flex-center-space">
@@ -158,6 +212,7 @@
 				<input type="number"
 					id="override_wind_angle"
 					name="override_wind_angle"
+					disabled
 					min="0"
 					max="360" />
 			</div>
@@ -167,6 +222,7 @@
 				<input type="number"
 					id="override_wind_strength"
 					name="override_wind_strength"
+					disabled
 					min="0"
 					max="100" />
 			</div>
@@ -194,21 +250,6 @@
 					data-event-change="on_gravity_override_value()" />
 			</div>
 		</div>
-
-		<h2 class="text-primary bg-darker collapsable-section-header"
-			data-event-click="minimize_section_toggle('mesh')">Mesh</h2>
-
-		<!-- <div class="collapsable-section" data-if="mesh_visible">
-			<div class="flex-center-space">
-				<label class="text-secondary">Mesh Size</label>
-				<select data-event-change="on_wave_resolution_change()">
-					<option value="256" data-attrif-selected="wave_resolution==256">128x128</option>
-					<option value="256" data-attrif-selected="wave_resolution==256">256x256</option>
-					<option value="512" data-attrif-selected="wave_resolution==512">512x512</option>
-					<option value="1024" data-attrif-selected="wave_resolution==1024">1024x1024</option>
-				</select>
-			</div>
-		</div> -->
 
 		<h2 class="text-primary bg-darker collapsable-section-header"
 			data-event-click="minimize_section_toggle('wave')">Wave Parameters</h2>
@@ -374,6 +415,7 @@
 					<label class="text-secondary" for="debug_lod_level">LOD level(TODO)</label>
 					<input type="radio" name="debugcolor"
 						id="debug_lod_level"
+						disabled
 						value="lod"
 						data-event-change="on_debug_coloring()"
 					/>

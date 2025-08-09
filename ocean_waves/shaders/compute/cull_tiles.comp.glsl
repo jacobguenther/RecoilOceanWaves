@@ -63,18 +63,6 @@ bool SphereInFrontOfPlane(vec4 plane, vec3 center, float radius) {
 	return SpherePlaneDistance(plane, center, radius) > 0.0;
 }
 
-// ___________
-// |\          \
-// | \          \
-// |  \          \
-// |   \          \
-// |    \__________\
-//  \   |    ^     |
-//   \  |    +---->|
-//    \ |          |
-//     \|__________|
-// + center
-// extents half dimensions
 float AABBPlaneDistance(vec4 plane, vec3 center, vec3 extents) {
 	float center_dist = PointPlaneDistance(plane, center);
 	float projected_radius = dot(extents, abs(plane.xyz));
@@ -82,6 +70,12 @@ float AABBPlaneDistance(vec4 plane, vec3 center, vec3 extents) {
 }
 bool AABBInFrontOfPlane(vec4 plane, vec3 center, vec3 extents) {
 	return AABBPlaneDistance(plane, center, extents) > 0.0;
+}
+
+// https://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
+float sdBox(vec3 p, vec3 b) {
+	vec3 q = abs(p) - b;
+	return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
 void main() {
@@ -101,16 +95,16 @@ void main() {
 
 	const vec3 camera_pos = cameraViewInv[3].xyz;
 	const vec2 tile_pos = tile_offset + camera_pos.xz;
-	const vec4 center = cameraView *
-		vec4(tile_pos.x, 0.0, tile_pos.y, 1.0);
+	const vec3 tile_position = vec3(tile_pos.x, 0.0, tile_pos.y);
+	const vec3 center = (cameraView * vec4(tile_position, 1.0)).xyz;
 
-	vec3 aabb_extents = vec3(MESH_SIZE * tile_scale + 64);
-	aabb_extents.y = 0.0;
+	vec3 aabb_extents = vec3(MESH_SIZE * 0.5 * tile_scale + 128.0);
+	aabb_extents.y = 10.0;
 
 	const float radius =
 		SQRT2 * float(MESH_SIZE) * 0.5
 		* tile_scale
-		+ 32.0; // from tile/camera/texture alignment
+		+ 64.0; // from tile/camera/texture alignment
 
 	#ifdef SHARED_FRUSTUM
 		if (gl_LocalInvocationID.x == 1) {
@@ -136,11 +130,19 @@ void main() {
 
 	bool visible = true;
 	for (int i = 0; i < 6; ++i) {
-		// visible = visible && AABBInFrontOfPlane(frustum[i], center.xyz, aabb_extents);
-		visible = visible && SphereInFrontOfPlane(frustum[i], center.xyz, radius);
+		// visible = visible && AABBInFrontOfPlane(frustum[i], center, aabb_extents);
+		visible = visible && SphereInFrontOfPlane(frustum[i], center, radius);
 	}
 
-	distances[gl_LocalInvocationID.x] = float(visible) * distance(camera_pos, vec3(tile_pos.x, 0.0, tile_pos.y));
+	vec3 aabb_min = tile_position-aabb_extents;
+	vec3 aabb_max = tile_position+aabb_extents;
+	vec3 closest_point = clamp(camera_pos, aabb_min, aabb_max);
+
+	float dist =
+		distance(camera_pos, closest_point);
+		// sdBox(aabb_extents, cameraViewInv[3].xyz-vec3(tile_offset.x, 0.0, tile_offset.y));
+
+	distances[gl_LocalInvocationID.x] = float(visible) * dist;
 
 	barrier();
 

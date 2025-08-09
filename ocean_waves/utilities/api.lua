@@ -226,6 +226,48 @@ function API:Init(state)
 		state:RebuildPipeline()
 	end
 
+	--- /oceanwaves setmeshsize value
+	---@param value string
+	function set_mesh_size(value)
+		state:SetMeshSize(value)
+	end
+
+	--- /oceanwaves setmeshgridcount value
+	---@param value string
+	function set_mesh_grid_count(value)
+		state:SetMeshGridCount(value)
+	end
+
+	--- /oceanwaves setdisplacementfalloffstart a
+	---@param a number
+	function set_displacement_falloff_start(value)
+		local start = as_number(value)
+		if start then
+			state.mesh.displacement_falloff_start = start
+			state:RebuildPipeline()
+		end
+	end
+
+	--- /oceanwaves setdisplacementfalloffrange a
+	---@param a number
+	function set_displacement_falloff_range(value)
+		local range = as_number(value)
+		if range then
+			state.mesh.displacement_falloff_distance = range
+			state:RebuildPipeline()
+		end
+	end
+
+	--- /oceanwaves setdisplacementfalloffrange a
+	---@param a number
+	function set_lod_step_distance(value)
+		local range = as_number(value)
+		if range then
+			state.mesh.lod_step_distance = range
+			state:RebuildPipeline()
+		end
+	end
+
 	function set_gravity(new_gravity)
 		local gravity = as_number(new_gravity)
 		if gravity then
@@ -453,6 +495,13 @@ function API:Init(state)
 		get_subsurface_color = function() return deep_copy(state.material.subsurface_color) end,
 		get_roughness = function() return state.material.roughness end,
 
+		set_mesh_size = set_mesh_size,
+		set_mesh_grid_count = set_mesh_grid_count,
+		set_displacement_falloff_start = set_displacement_falloff_start,
+		set_displacement_falloff_range = set_displacement_falloff_range,
+		set_lod_step_distance = set_lod_step_distance,
+		get_mesh_settings = function() return deep_copy(state.mesh) end,
+
 		set_gravity = set_gravity,
 		set_default_gravity = set_default_gravity,
 		get_gravity = get_gravity,
@@ -496,7 +545,6 @@ function API:Init(state)
 	WG['oceanwaves'] = api
 
 	function widget:TextCommand(message)
-		-- Spring.Echo('test', message)
 		text_command(api, message)
 	end
 

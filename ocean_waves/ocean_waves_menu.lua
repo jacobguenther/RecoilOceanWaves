@@ -40,6 +40,8 @@ local dm_name = nil -- widget.whInfo.name
 local hidden = false
 
 local squash_first_texture_filtering_update = true
+local squash_first_mesh_size_update = true
+local squash_first_grid_count_update = true
 local squash_first_wave_res_update = true
 local squash_first_primitive_mode_update = true
 
@@ -57,15 +59,20 @@ function widget:Initialize()
 		minimize_toggle = minimize_toggle,
 
 		material_visible = true,
+		mesh_visible = true,
 		wind_visible = false,
 		gravity_visible = false,
 		wave_visible = false,
 		debug_visible = false,
 		minimize_section_toggle = minimize_section_toggle,
 
-		material =  WG['oceanwaves'].get_material(),
+		material = WG['oceanwaves'].get_material(),
 		on_material_change = on_material_change,
 		on_texture_filtering_mode = on_texture_filtering_mode,
+
+		mesh = WG['oceanwaves'].get_mesh_settings(),
+		on_mesh_size_change = on_mesh_size_change,
+		on_mesh_grid_count_change = on_mesh_grid_count_change,
 
 		min_wind = Game.windMin,
 		max_wind = Game.windMax,
@@ -149,8 +156,6 @@ function widget:RecvLuaMsg(msg, playerID)
 end
 
 function validate_number(element)
-	Spring.Echo(element:IsClassSet("input-error"), element.attributes.value, element.attributes.min, element.attributes.max)
-
 	if not element.attributes.value then
 		return handle_invalid_number(element)
 	end
@@ -197,6 +202,8 @@ end
 function minimize_section_toggle(event, section)
 	if section == "material" then
 		dm.material_visible = not dm.material_visible
+	elseif section == "mesh" then
+		dm.mesh_visible = not dm.mesh_visible
 	elseif section == "wind" then
 		dm.wind_visible = not dm.wind_visible
 	elseif section == "wave" then
@@ -224,6 +231,12 @@ function on_material_change(event, id, part)
 			WG['oceanwaves'].set_foam_falloff_start(value)
 		elseif id == 'foam_falloff_distance' then
 			WG['oceanwaves'].set_foam_falloff_range(value)
+		elseif id == 'displacement_falloff_start' then
+			WG['oceanwaves'].set_displacement_falloff_start(value)
+		elseif id == 'displacement_falloff_distance' then
+			WG['oceanwaves'].set_displacement_falloff_range(value)
+		elseif id == 'lod_step_distance' then
+			WG['oceanwaves'].set_lod_step_distance(value)
 		end
 	else
 		local color = {}
@@ -245,10 +258,29 @@ end
 function on_texture_filtering_mode(event)
 	if squash_first_texture_filtering_update then
 		squash_first_texture_filtering_update = false
+		return
 	end
 
 	local value = event.parameters.value
 	WG['oceanwaves'].set_texture_filtering(value)
+end
+
+function on_mesh_size_change(event)
+	if squash_first_mesh_size_update then
+		squash_first_mesh_size_update = false
+		return
+	end
+
+	local value = tonumber(event.parameters.value)
+	WG['oceanwaves'].set_mesh_size(value)
+end
+function on_mesh_grid_count_change(event)
+	if squash_first_grid_count_update then
+		squash_first_grid_count_update = false
+		return
+	end
+	local value = tonumber(event.parameters.value)
+	WG['oceanwaves'].set_mesh_grid_count(value)
 end
 
 function on_override_gravity(event, gravity_value_id)
@@ -273,6 +305,7 @@ end
 function on_wave_resolution_change(event)
 	if squash_first_wave_res_update then
 		squash_first_wave_res_update = false
+		return
 	end
 
 	local value = tonumber(event.parameters.value)

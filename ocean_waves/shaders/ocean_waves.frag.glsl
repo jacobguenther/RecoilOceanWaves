@@ -168,20 +168,22 @@ void main() {
 	for (uint i = 0U; i < NUM_CASCADES; ++i) {
 		const float uv_scale = 1.0 / cascade_length[i];
 		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(i));
-		// Pixels per meter
-		const float ppm = WAVE_RES * 0.1 * uv_scale;
 		const vec3 normal_scale = vec3(vec2(cascade_normal_scale[i]), 1.0);
-		// Mix between bicubic and bilinear filtering depending on the world space pixels per meter.
-		// This is dependent on the tile size as well as displacement/normal map resolution.
-		const vec4 bilinear = texture(normal_map, coords);
-		const vec4 bicubic = texture_bicubic(normal_map, coords);
 		#ifdef TEXTURE_FILTERING_BILINEAR
+			const vec4 bilinear = texture(normal_map, coords);
 			gradient += bilinear.xyw * normal_scale;
 		#endif
 		#ifdef TEXTURE_FILTERING_BICUBIC
+			const vec4 bicubic = texture_bicubic(normal_map, coords);
 			gradient += bicubic.xyw * normal_scale;
 		#endif
 		#ifdef TEXTURE_FILTERING_DEFAULT
+			const vec4 bilinear = texture(normal_map, coords);
+			const vec4 bicubic = texture_bicubic(normal_map, coords);
+			// Pixels per meter
+			const float ppm = WAVE_RES * 0.1 * uv_scale;
+			// Mix between bicubic and bilinear filtering depending on the world space pixels per meter.
+			// This is dependent on the tile size as well as displacement/normal map resolution.
 			gradient += mix(bicubic, bilinear, min(1.0, ppm)).xyw * normal_scale;
 		#endif
 	}
