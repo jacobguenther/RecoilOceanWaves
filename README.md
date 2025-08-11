@@ -10,25 +10,29 @@ screenshot here
 	* For Zero-K in Steam `right-click Zero-K->Properties->Installed Files->Browse`
 * Navigate to LuaUI/Widgets
 	* If the Widgets folder does not exist then create it(Note the capital W)
-* Download the zip of this repository and put the contents of the zip archive in the Widgets folder
+* Download the zip of this repository and extract the contents of the zip archive into the Widgets folder
 
   The layout should look like
 
   ```
-  └── LuaUI/Widgets
-      └── ocean_waves
-          ├── ocean_waves.lua
-          ├── ocean_waves_menu.lua
-          ├── shaders
-          ├── ui
-          └── utilites
+  └── LuaUI
+      └── Widgets
+          └── ocean_waves
+              ├── ocean_waves.lua
+              ├── ocean_waves_menu.lua
+              ├── shaders
+              ├── ui
+              └── utilites
   ```
-  
+
 * In game you can enable this widget by pressing f11(Zero-K alt+F11)
-	* Then either by searching for OceanWaves or scrolling to the bottom, select OceanWaves
+	* Then either by searching for Ocean Waves or scrolling to the bottom, select Ocean Waves
 
 ## TextCommands
 All text commands take the form `/oceanwaves COMMAND PARAMETERS`
+
+All parameters are seperated by whitespace
+
 ### Commands
 * `setwatercolor r g b a?`
 * `setwateralpha a`
@@ -53,6 +57,8 @@ TODO
 
 ### Wave Resolution
 The size of the spectrum, displacement, and normal maps used to generate the waves.
+
+This setting has the most impact on performance.
 
 ### Cascade
 Refer to [Godot Ocean Waves](https://github.com/2Retr0/GodotOceanWaves)
@@ -104,12 +110,14 @@ If you like this project please give this repository a star⭐ and the discord p
 - [X] Fix Cascade button css
 - [ ] Sliders where applicable
 - [X] Bound checking where applicable
-- [ ] Configurable displacement falloff
+- [X] Configurable displacement falloff
+- [X] Configurable foam falloff
 - [ ] Mesh and LOD config
 - [ ] Add tooltips
 - [X] Text command enable/disable ui
 - [X] Minimize/Close ui buttons
 - [X] ui mysteriously reopening [#2](/../../issues/2)
+- [ ] close menu when ui is disabled (ctl+f7(grid keys shortcut))
 
 ### Debug UI
 - [X] disable displacement
@@ -120,7 +128,7 @@ If you like this project please give this repository a star⭐ and the discord p
 
 ### Map Settings
 - [ ] Have cascade winds track map wind
-- [X] Use map gravity, normal or space/moon [#3](/../../issues/3)
+- [X] Use map gravity [#3](/../../issues/3)
 
 ### Settings
 - [ ] MVP Save settings
@@ -150,10 +158,10 @@ If you like this project please give this repository a star⭐ and the discord p
 - [ ] Fix Subsurface color
 - [ ] Verify shaders for AMD drivers
 - [ ] Adjustable time scale
+- [ ] Reflections
 
 ### Future Features
 - [ ] Caustics
-- [ ] Reflections
 - [ ] Shore Foam
 - [ ] Building Foam
 - [ ] Unit Foam
@@ -167,9 +175,9 @@ If you like this project please give this repository a star⭐ and the discord p
 - [X] Decouple UI from widget
 
 ### Misc
-- [ ] Change license to GPLv2 or later.
+- [X] Change license to GPLv2 or later.
 
 ## License
-All code(.lua, .glsl) files in this repository are licensed under the [GNU AGPLv3](LICENSE) license.
+All code(.lua, .glsl) files in this repository are licensed under the [GNU GPLv2](LICENSE), or any later version.
 
-Some shaders have MIT license notices because significant portions of them where originally licensed under MIT but they are relicensed as AGPLv3.
+Some shaders have MIT license notices because significant portions of them where originally licensed under MIT but they are relicensed as GPLv2 or later.
