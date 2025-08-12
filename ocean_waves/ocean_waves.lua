@@ -644,15 +644,17 @@ function widget:DrawGenesis()
 		rebuild_pipeline()
 		should_rebuild_pipeline = false
 	end
-	if isPaused then
-		return
-	end
+
 	if should_create_depth_map then
 		create_depth_map()
 	end
 	if update_culling then
 		clipmap:CullTiles(cull_tiles_comp)
 		update_culling = false
+	end
+
+	if isPaused then
+		return
 	end
 
 	butterfly_factors_ssbo:BindBufferRange(5, nil, nil, GL_SHADER_STORAGE_BUFFER)
@@ -720,6 +722,9 @@ function draw_water()
 	-- glTexture(3, 'modelmaterials_gl4/brdf_0.png') -- brdfLUT
 	-- glTexture(4, 'LuaUI/images/noisetextures/noise64_cube_3.dds')
 	-- glTexture(5, 'modelmaterials_gl4/envlut_0.png')
+	glTexture(6, '$reflection')
+	glTexture(7, '$map_reflection')
+	glTexture(8, '$sky_reflection')
 
 	if state.material.should_update_material then
 		local material = state.material

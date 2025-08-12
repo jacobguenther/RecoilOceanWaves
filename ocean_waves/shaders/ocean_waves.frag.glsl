@@ -72,6 +72,11 @@ layout (binding=DEPTH_MAP_BINDING) uniform sampler2DArray depth_map;
 // layout (binding = 4) uniform sampler3D noisetex3dcube;
 // layout (binding = 5) uniform sampler2D envLUT;
 
+layout (binding = 6) uniform sampler2D reflection;
+// layout (binding = 7) uniform sampler2D map_reflection;
+// layout (binding = 8) uniform sampler2D sky_reflection;
+
+// material
 layout (location = 7) uniform vec4 water_color;      // rgb, water_alpha
 layout (location = 8) uniform vec4 foam_color;       // rgb, foam_alpha
 layout (location = 9) uniform vec4 subsurface_color; // rgb, roughness
@@ -152,6 +157,39 @@ float MicrofacetDistribution(float NdotH, float roughness4) {
 float ComputeSpecularAOFilament(float NoV, float diffuseAO, float roughness2) {
 	return clamp(pow(NoV + diffuseAO, exp2(-16.0 * roughness2 - 1.0)) - 1.0 + diffuseAO, 0.0, 1.0);
 	// return diffuseAO;
+}
+
+
+// https://github.com/beyond-all-reason/RecoilEngine/blob/aed81b7cc721aa964f850ec9960af287f66bf98c/cont/base/springcontent/shaders/GLSL/BumpWaterFS.glsl#L24
+vec3 GetReflection(float angle, vec3 normal)
+{
+	vec3 reflColor = vec3(0.0, 0.0, 0.0);
+	#ifdef REFLECTION
+		vec2 screenPos = gl_FragCoord.xy - ViewPos;
+		vec2 screencoord = screenPos * ScreenTextureSizeInverse;
+		vec2 reftexcoord = screenPos * ScreenInverse;
+
+		// we have to mirror the Y-axis
+		reftexcoord  = vec2(reftexcoord.x, 1.0 - reftexcoord.y);
+		reftexcoord += vec2(0.0, 3.0 * ScreenInverse.y) + normal.xz * 0.09 * ReflDistortion;
+
+		reflColor = texture2D(reflection, reftexcoord).rgb;
+
+		// #ifdef BLUR_REFLECTION
+		// 	vec2  v = BlurBase;
+		// 	float s = BlurExponent;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s*s).rgb;
+		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s*s*s).rgb;
+		// 	reflColor *= 0.125;
+		// #endif // BLUR_REFLECTION
+	#endif // REFLECTION
+
+	return reflColor;
 }
 
 
@@ -318,6 +356,10 @@ void main() {
 	float alpha =
 		(1.0-foam_factor) * water_color.a +
 		foam_factor * foam_color.a;
+
+	// float angle = (1.0 - abs(Rv));
+	// const vec3 reflection_color = GetReflection(angle, N);
+
 	vec3 color = ambientContrib.xyz + dirContrib.xyz;
 	// color *= 2.0; // hacks
 
