@@ -80,7 +80,6 @@ function FBO:new(sizeX, sizeY, withDepth)
 		drawbuffers = {GL_COLOR_ATTACHMENT0_EXT},
 	}
 	fbo = glCreateFBO(config)
-	Spring.Echo(depth, gl.IsValidFBO(fbo))
 
 	local this = {
 		sizeX = sizeX,

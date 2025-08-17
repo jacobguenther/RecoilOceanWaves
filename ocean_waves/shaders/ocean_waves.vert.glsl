@@ -140,7 +140,7 @@ void main() {
 	#ifdef DEBUG_DISABLE_DISPLACEMENT
 		displacement = vec3(0.0);
 	#endif
-	displacement.xz = clamp(displacement.xz, vec2(-10.0), vec2(10.0));
+	// displacement.xz = clamp(displacement.xz, vec2(-10.0), vec2(10.0));
 	// displacement = vec3(0.0, displacement.y, 0.0);
 
 	// TODO: Dampen displacement when in shallow water
