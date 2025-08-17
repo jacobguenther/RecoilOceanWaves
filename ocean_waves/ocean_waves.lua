@@ -70,9 +70,12 @@ local GetWaterLevel = Spring.GetWaterLevel
 local GetWaterPlaneLevel = Spring.GetWaterPlaneLevel
 local GetGroundHeight = Spring.GetGroundHeight
 local GetGroundOrigHeight = Spring.GetGroundOrigHeight
+local GetViewGeometry = Spring.GetViewGeometry
 
 local GetWaterRendering = gl.GetWaterRendering
 local GetMapRendering = gl.GetMapRendering
+
+local glDrawWaterReflections = gl.DrawWaterReflections
 
 local glCreateShader = gl.CreateShader
 local glDeleteShader = gl.DeleteShader
@@ -144,6 +147,13 @@ local glBlendFunc = gl.BlendFunc
 local glBlendEquationSeparate = gl.BlendEquationSeparate
 local glBlendFuncSeparate = gl.BlendFuncSeparate
 
+local glAlphaTest = gl.AlphaTest
+local glAlphaToCoverage = gl.AlphaToCoverage
+
+local glDepthMask = gl.DepthMask
+local glDepthTest = gl.DepthTest
+local glViewport = gl.Viewport
+
 local GL_NEVER    = GL.NEVER
 local GL_LESS     = GL.LESS
 local GL_EQUAL    = GL.EQUAL
@@ -153,8 +163,10 @@ local GL_NOTEQUAL = GL.NOTEQUAL
 local GL_GEQUAL   = GL.GEQUAL
 local GL_ALWAYS   = GL.ALWAYS
 
-local glAlphaTest = gl.AlphaTest
-local glAlphaToCoverage = gl.AlphaToCoverage
+local glCulling = gl.Culling
+
+local GL_BACK = GL.BACK
+local GL_FRONT = GL.FRONT
 
 local common = VFS.Include(widget_path .. 'utilities/common.lua')
 local deep_copy = common.deep_copy
@@ -195,6 +207,11 @@ local spectrum_texture
 local displacement_map
 local normal_map
 
+local FBO = VFS.Include(widget_path .. 'utilities/gl/fbo.lua')
+local reflection_fbo
+local reflection_texture_x,reflection_texture_y = GetViewGeometry()
+local reflections_supported = glDrawWaterReflections ~= nil
+
 local Clip = VFS.Include(widget_path .. 'utilities/gl/clipmap.lua')
 local clipmap
 
@@ -217,6 +234,9 @@ local TRANSPOSE_TILE_SIZE = 32
 local SPECTRUM_TILE_SIZE = 16
 local SPECTRUM_MODULTE_TILE_SIZE = 16
 local UNPACK_TILE_SIZE = 16
+
+local CLIP_GRID_ALIGNMENT = 64
+local HALF_CLIP_GRID_ALIGNMENT = CLIP_GRID_ALIGNMENT / 2
 
 local num_fft_stages
 local fft_size
@@ -470,6 +490,9 @@ function init_shaders()
 		"#define LOD_STEP ("..state.mesh.lod_step_distance..")\n"..
 		"#define MIN_LOD_LEVEL (1)\n"..
 		"#define MAX_LOD_LEVEL (10)\n"..
+		
+		"#define CLIP_GRID_ALIGNMENT ("..CLIP_GRID_ALIGNMENT..")\n"..
+		"#define HALF_CLIP_GRID_ALIGNMENT ("..HALF_CLIP_GRID_ALIGNMENT..")\n"..
 
 		"#define DISPLACEMENT_FALLOFF_START ("..state.mesh.displacement_falloff_start..")\n"..
 		"#define DISPLACEMENT_FALLOFF_DIST ("..state.mesh.displacement_falloff_distance..")\n"..
@@ -498,7 +521,20 @@ function init_shaders()
 
 		"#define MESH_SIZE ("..state.mesh.size..")\n"..
 		"#define CLIPMAP_TILE_COUNT ("..clipmap:GetTileCount()..")\n"..
-		engine_uniform_buffer_defs
+		engine_uniform_buffer_defs.."\n"
+
+	local reflections = state.material.reflections
+	if reflections_supported and reflections.enabled then
+		shader_defines = shader_defines..
+			"#define REFLECTION\n"..
+			"#define REFLECTION_DISTORTION ("..reflections.distortion..")\n"
+		if reflections.blur_enabled then
+			shader_defines = shader_defines..
+				"#define REFLECTION_BLUR\n"..
+				"#define REFLECTION_BLUR_BASE ("..reflections.blur_base..")\n"..
+				"#define REFLECTION_BLUR_EXPONENT ("..reflections.blur_exponent..")\n"
+		end
+	end
 
 	if state.debug.disable_displacement then
 		shader_defines = shader_defines.."#define DEBUG_DISABLE_DISPLACEMENT\n"
@@ -564,6 +600,9 @@ function compile_compute_shader(path, custom_defines)
 end
 function init_textures()
 	local wave_resolution = state.wave_resolution
+	if reflections_supported then
+		reflection_fbo = FBO:new(reflection_texture_x, reflection_texture_x, true)
+	end
 	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=#state.cascades}, 0, GL_RGBA16F)
 	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 1, GL_RGBA16F)
 	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 2, GL_RGBA16F)
@@ -639,7 +678,30 @@ function widget:GamePaused(playerID, isGamePaused)
 	end
 end
 
+function widget:DrawWorldReflection()
+
+end
+
 function widget:DrawGenesis()
+	local reflections = state.material.reflections
+	if reflections_supported and reflections.enabled then
+		reflection_fbo:bind()
+			glDepthMask(true)
+			glDepthTest(GL_LESS)
+			local sky         = reflections.sky
+			local ground      = reflections.ground
+			local units       = reflections.units
+			local features    = reflections.features
+			local projectiles = reflections.projectiles
+			glDrawWaterReflections(
+				sky, ground, units, features, projectiles,
+				reflection_fbo.sizeX, reflection_fbo.sizeY
+			)
+		reflection_fbo:unbind()
+		local viewGeometryX,viewGeometryY = GetViewGeometry()
+		glViewport(0, 0, viewGeometryX, viewGeometryY)
+	end
+
 	if should_rebuild_pipeline then
 		rebuild_pipeline()
 		should_rebuild_pipeline = false
@@ -648,6 +710,7 @@ function widget:DrawGenesis()
 	if should_create_depth_map then
 		create_depth_map()
 	end
+
 	if update_culling then
 		clipmap:CullTiles(cull_tiles_comp)
 		update_culling = false
@@ -714,20 +777,21 @@ function draw_water()
 	glBlending(true);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glCulling(GL_FRONT)
+
 	ocean_waves_shader:Activate()
 	displacement_map:use_texture()
 	normal_map:use_texture()
 	depth_map:use_texture()
 
-	-- glTexture(3, 'modelmaterials_gl4/brdf_0.png') -- brdfLUT
-	-- glTexture(4, 'LuaUI/images/noisetextures/noise64_cube_3.dds')
-	-- glTexture(5, 'modelmaterials_gl4/envlut_0.png')
-	glTexture(6, '$reflection')
-	glTexture(7, '$map_reflection')
-	glTexture(8, '$sky_reflection')
+	glTexture(4, 'modelmaterials_gl4/brdf_0.png') -- brdfLUT
 
-	if state.material.should_update_material then
-		local material = state.material
+	local material = state.material
+	if reflections_supported and material.reflections.enabled then
+		glTexture(5, reflection_fbo.tex)
+	end
+
+	if material.should_update_material then
 		glUniform(7,
 			material.water_color.r,
 			material.water_color.g,
@@ -780,21 +844,28 @@ function draw_water()
 	cascades_ubo:BindBufferRange(15, nil, nil, GL_UNIFORM_BUFFER)
 
 	clipmap:Draw()
+	glCulling(GL_BACK)
 end
 
 -- Recull clipmap tiles and update lod levels
 -- FIXME: camera callins don't exist?
 function widget:CameraPositionChanged(posx, posy, posz)
-	Spring.Echo("CameraPositionChanged", posx, posy, posz)
+	-- Spring.Echo("CameraPositionChanged", posx, posy, posz)
 	update_culling = true
 end
 function widget:CameraRotationChanged(rotx, roty, rotz)
-	Spring.Echo("CameraRotationChanged", rotx, roty, rotz)
+	-- Spring.Echo("CameraRotationChanged", rotx, roty, rotz)
 	update_culling = true
 end
 
 function widget:ViewResize(vsx, vsy)
 	update_culling = true
+
+	if reflections_supported and reflection_fbo then
+		reflection_fbo:Delete()
+		reflection_texture_x,reflection_texture_y = vsx,vsy
+		reflection_fbo = FBO:new(reflection_texture_x, reflection_texture_x, true)
+	end
 end
 
 -- For unit foam/displacement
@@ -805,20 +876,21 @@ end
 
 function delete_buffers()
 	update_butterfly = false
-	state.upload_cascades_ssbo = false
-	state.upload_cascades_ubo = false
+	if state then state.upload_cascades_ssbo = false end
+	if state then state.upload_cascades_ubo = false end
 	if butterfly_factors_ssbo ~= nil then butterfly_factors_ssbo:Delete() end
 	if cascades_ssbo ~= nil then cascades_ssbo:Delete() end
 	if fft_ssbo ~= nil then fft_ssbo:Delete() end
 end
 function delete_textures()
+	if reflections_supported and reflection_fbo ~= nil then reflection_fbo:Delete() end
 	if depth_map ~= nil then depth_map:delete() end
 	if spectrum_texture ~= nil then spectrum_texture:delete() end
 	if normal_map ~= nil then normal_map:delete() end
 	if displacement_map ~= nil then displacement_map:delete() end
 end
 function delete_shaders()
-	state.material.should_update_material = false
+	if state and state.material then state.material.should_update_material = false end
 	if ocean_waves_shader ~= nil then ocean_waves_shader:Delete() end
 	if butterfly_comp ~= nil then glDeleteShader(butterfly_comp) end
 	if spectrum_comp ~= nil then glDeleteShader(spectrum_comp) end

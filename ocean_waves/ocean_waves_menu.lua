@@ -70,6 +70,7 @@ function widget:Initialize()
 		material = WG['oceanwaves'].get_material(),
 		on_material_change = on_material_change,
 		on_texture_filtering_mode = on_texture_filtering_mode,
+		reflections_not_supported = not WG['oceanwaves'].are_reflections_supported(),
 
 		mesh = WG['oceanwaves'].get_mesh_settings(),
 		on_mesh_size_change = on_mesh_size_change,
@@ -217,41 +218,61 @@ function minimize_section_toggle(event, section)
 end
 
 function on_material_change(event, id, part)
-	local value = validate_number(event.current_element)
-	if not value then
-		return
-	end
 	if part == nil then
+		local number = validate_number(event.current_element)
+		if not number then
+			return
+		end
 		if id == 'alpha' then
-			WG['oceanwaves'].set_water_alpha(value)
+			WG['oceanwaves'].set_water_alpha(number)
 		elseif id == 'foam_alpha' then
-			WG['oceanwaves'].set_foam_alpha(value)
+			WG['oceanwaves'].set_foam_alpha(number)
 		elseif id == 'roughness' then
-			WG['oceanwaves'].set_roughness(value)
+			WG['oceanwaves'].set_roughness(number)
 		elseif id == 'foam_falloff_start' then
-			WG['oceanwaves'].set_foam_falloff_start(value)
+			WG['oceanwaves'].set_foam_falloff_start(number)
 		elseif id == 'foam_falloff_distance' then
-			WG['oceanwaves'].set_foam_falloff_range(value)
+			WG['oceanwaves'].set_foam_falloff_range(number)
 		elseif id == 'displacement_falloff_start' then
-			WG['oceanwaves'].set_displacement_falloff_start(value)
+			WG['oceanwaves'].set_displacement_falloff_start(number)
 		elseif id == 'displacement_falloff_distance' then
-			WG['oceanwaves'].set_displacement_falloff_range(value)
+			WG['oceanwaves'].set_displacement_falloff_range(number)
 		elseif id == 'lod_step_distance' then
-			WG['oceanwaves'].set_lod_step_distance(value)
+			WG['oceanwaves'].set_lod_step_distance(number)
+		end
+	elseif id == 'reflections' then
+		if part == 'distortion' or part == 'blur_base' or part == 'blur_exponent' then
+			local number = validate_number(event.current_element)
+			if not number then
+				return
+			end
+			if part == 'distortion' then WG['oceanwaves'].set_reflection_distortion(number)
+			elseif part == 'blur_base' then WG['oceanwaves'].set_reflection_blur_base(number)
+			elseif part == 'blur_exponent' then WG['oceanwaves'].set_reflection_blur_exponent(number)
+			end
+		elseif part == 'enabled' or part == 'blur_enabled' then
+			local checked = event.parameters.value == "on"
+			if part == 'enabled' then WG['oceanwaves'].set_reflection_enabled(checked)
+			elseif part == 'blur_enabled' then WG['oceanwaves'].set_reflection_blur_enabled(checked)
+			end
 		end
 	else
+		local number = validate_number(event.current_element)
+		if not number then
+			return
+		end
 		local color = {}
 		if id == 'water_color' then
 			color = WG['oceanwaves'].get_water_color()
-			color[part] = value
+			color[part] = number
 			WG['oceanwaves'].set_water_color(color.r, color.g, color.b)
 		elseif id == 'foam_color' then
 			color = WG['oceanwaves'].get_foam_color()
-			color[part] = value
+			color[part] = number
 			WG['oceanwaves'].set_foam_color(color.r, color.g, color.b)
 		elseif id == 'subsurface_color' then
 			color = WG['oceanwaves'].get_subsurface_color()
-			color[part] = value
+			color[part] = number
 			WG['oceanwaves'].set_subsurface_color(color.r, color.g, color.b)
 		end
 	end

@@ -117,6 +117,46 @@
 					data-event-change="on_material_change('roughness')" />
 			</div>
 
+			<h3 class="text-primary">Reflections</h3>
+			<div class="flex-center-space">
+				<label class="text-secondary">Enabled</label>
+				<input type="checkbox"
+					data-attrif-disabled="reflections_not_supported"
+					data-attrif-checked="material.reflections.enabled"
+					data-event-change="on_material_change('reflections', 'enabled')" />
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Distortion</label>
+				<input type="number"
+					min = 0
+					data-attrif-disabled="reflections_not_supported"
+					data-attr-value="material.reflections.distortion"
+					data-event-change="on_material_change('reflections', 'distortion')" />
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Blur</label>
+				<input type="checkbox"
+					data-attrif-disabled="reflections_not_supported"
+					data-attrif-checked="material.reflections.blur_enabled"
+					data-event-change="on_material_change('reflections', 'blur_enabled')" />
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Blur Base</label>
+				<input type="number"
+					min = 0
+					data-attrif-disabled="reflections_not_supported"
+					data-attr-value="material.reflections.blur_base"
+					data-event-change="on_material_change('reflections', 'blur_base')" />
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Blur Exponent</label>
+				<input type="number"
+					min = 0.0001
+					data-attrif-disabled="reflections_not_supported"
+					data-attr-value="material.reflections.blur_exponent"
+					data-event-change="on_material_change('reflections', 'blur_exponent')" />
+			</div>
+
 			<div class="flex-center-space">
 				<label class="text-secondary">Texture Filtering</label>
 				<select id="texture_filtering_mode"

@@ -16,10 +16,12 @@ You should have received a copy of the GNU General Public License along
 with this program. If not, see <https://www.gnu.org/licenses/>. 
 ]]
 
+local viewGeometryX,viewGeometryY = Spring.GetViewGeometry()
+
 local defaults = {
 	material = {
 		water_color =      {r = 0.20, g = 0.30, b = 0.36},
-		alpha = 0.35,
+		alpha = 0.4,
 
 		foam_color =       {r = 0.73, g = 0.67, b = 0.62},
 		foam_alpha = 0.7,
@@ -29,7 +31,26 @@ local defaults = {
 		subsurface_color = {r = 0.90, g = 1.15, b = 0.85},
 		roughness = 0.65,
 
-		texture_filtering = "bilinear" -- "default" | "bilinear" | "bicubic"
+		reflections = {
+			enabled = true,
+
+			sky = true,
+			ground = true,
+			units = true,
+			features = true,
+			projectiles = true,
+
+			distortion = 8.0,
+
+			blur_enabled = false,
+			blur_base = 0.001,
+			blur_exponent = 1.5,
+
+			-- texture_x = 512, -- viewGeometryX,
+			-- texture_y = 512, -- viewGeometryY,
+		},
+
+		texture_filtering = "default" -- "default"/"mixed" | "bilinear" | "bicubic"
 	},
 	mesh = {
 		size = 1024,
@@ -38,14 +59,16 @@ local defaults = {
 		displacement_falloff_start = 2048,
 		displacement_falloff_distance = 4096,
 	},
+	wind_scale = 1.0,
+	time_scale = 1.0,
 	wave_resolution = 1024,
 	cascades = {
 		{
 			tile_length = 997.0,
 			displacement_scale = 1.0,
-			normal_scale = 1.0,
+			normal_scale = 1,
 
-			wind_speed = 8.0,
+			wind_speed = 4,
 			wind_direction = 45,
 			fetch_length_km = 150.0,
 			depth = 40.0,
@@ -59,9 +82,9 @@ local defaults = {
 		{
 			tile_length = 751.0,
 			displacement_scale = 1.0,
-			normal_scale = 1.0,
+			normal_scale = 1,
 
-			wind_speed = 6.0,
+			wind_speed = 4,
 			wind_direction = 40,
 			fetch_length_km = 150.0,
 			depth = 40.0,
@@ -75,9 +98,9 @@ local defaults = {
 		{
 			tile_length = 293.0,
 			displacement_scale = 1.0,
-			normal_scale = 1.0,
+			normal_scale = 1,
 
-			wind_speed = 6.0,
+			wind_speed = 4,
 			wind_direction = 40,
 			fetch_length_km = 150.0,
 			depth = 40.0,

@@ -111,12 +111,16 @@ void main() {
 
 	const vec3 camera_position = cameraViewInv[3].xyz;
 	const ivec2 camera_ipos = ivec2(camera_position.xz);
-	const int world_grid_alignment = 128;
-	const int half_world_grid_alignment = world_grid_alignment/2;
 	const vec2 camera_grid_alignment = vec2(
-		camera_ipos.x-camera_ipos.x%world_grid_alignment+half_world_grid_alignment,
-		camera_ipos.y-camera_ipos.y%world_grid_alignment+half_world_grid_alignment
+		camera_ipos.x-camera_ipos.x%CLIP_GRID_ALIGNMENT+HALF_CLIP_GRID_ALIGNMENT,
+		camera_ipos.y-camera_ipos.y%CLIP_GRID_ALIGNMENT+HALF_CLIP_GRID_ALIGNMENT
 	);
+	// const vec2 camera_grid_alignment = vec2(
+	// 	camera_ipos -
+	// 	camera_ipos%ivec2(CLIP_GRID_ALIGNMENT) +
+	// 	ivec2(HALF_CLIP_GRID_ALIGNMENT)
+	// );
+
 	const vec2 local_coords = rotate2d(coords, tile_rot * -HALF_PI);
 
 	const vec2 uv = (local_coords + tile_offset) * tile_scale + camera_grid_alignment;
@@ -136,6 +140,8 @@ void main() {
 	#ifdef DEBUG_DISABLE_DISPLACEMENT
 		displacement = vec3(0.0);
 	#endif
+	displacement.xz = clamp(displacement.xz, vec2(-10.0), vec2(10.0));
+	// displacement = vec3(0.0, displacement.y, 0.0);
 
 	// TODO: Dampen displacement when in shallow water
 	const float distance_factor = 1.0 - smoothstep(DISPLACEMENT_FALLOFF_START, DISPLACEMENT_FALLOFF_END, dist);

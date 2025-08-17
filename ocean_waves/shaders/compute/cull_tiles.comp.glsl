@@ -99,13 +99,13 @@ void main() {
 	const vec3 tile_position = vec3(tile_pos.x, 0.0, tile_pos.y);
 	const vec3 center = (cameraView * vec4(tile_position, 1.0)).xyz;
 
-	vec3 aabb_extents = vec3(MESH_SIZE * 0.5 * tile_scale + 128.0);
+	vec3 aabb_extents = vec3(MESH_SIZE * 0.5 * tile_scale + CLIP_GRID_ALIGNMENT);
 	aabb_extents.y = 10.0;
 
 	const float radius =
 		SQRT2 * float(MESH_SIZE) * 0.5
 		* tile_scale
-		+ 64.0; // from tile/camera/texture alignment
+		+ HALF_CLIP_GRID_ALIGNMENT; // from tile/camera/texture alignment
 
 	#ifdef SHARED_FRUSTUM
 		if (gl_LocalInvocationID.x == 1) {

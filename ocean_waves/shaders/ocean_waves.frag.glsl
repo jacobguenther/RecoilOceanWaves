@@ -53,7 +53,7 @@ SOFTWARE.
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 
 const float MIN_ROUGHNESS = 0.04;
-const float DEFAULT_F0 = 0.02;
+const float DEFAULT_F0 = 0.04;
 
 layout (std140, binding=15) uniform CascadeData {
 	vec4 cascade_displacement_scale;
@@ -68,13 +68,9 @@ layout (std140, binding=15) uniform CascadeData {
 layout (binding=NORMAL_MAP_BINDING) uniform sampler2DArray normal_map;
 layout (binding=DEPTH_MAP_BINDING) uniform sampler2DArray depth_map;
 
-// layout (binding = 3) uniform sampler2D brdfLUT;
-// layout (binding = 4) uniform sampler3D noisetex3dcube;
-// layout (binding = 5) uniform sampler2D envLUT;
+layout (binding = 4) uniform sampler2D brdfLUT;
 
-layout (binding = 6) uniform sampler2D reflection;
-// layout (binding = 7) uniform sampler2D map_reflection;
-// layout (binding = 8) uniform sampler2D sky_reflection;
+layout (binding = 5) uniform sampler2D reflection;
 
 // material
 layout (location = 7) uniform vec4 water_color;      // rgb, water_alpha
@@ -88,6 +84,12 @@ in DataVS {
 } IN;
 
 out vec4 outColor;
+
+vec3 GetFlatNormal() {
+	vec3 dx = dFdx(IN.world_vertex_position_distance.xyz);
+	vec3 dy = dFdy(IN.world_vertex_position_distance.xyz);
+	return normalize(cross(dx, dy));
+}
 
 /** Filter weights for a cubic B-spline. */
 vec4 cubic_weights(float a) {
@@ -154,59 +156,39 @@ float MicrofacetDistribution(float NdotH, float roughness4) {
 	float f = (NdotH * roughness4 - NdotH) * NdotH + 1.0;
 	return roughness4 / (/*PI */ f * f);
 }
-float ComputeSpecularAOFilament(float NoV, float diffuseAO, float roughness2) {
-	return clamp(pow(NoV + diffuseAO, exp2(-16.0 * roughness2 - 1.0)) - 1.0 + diffuseAO, 0.0, 1.0);
+float ComputeSpecularAOFilament(float NdotV, float diffuseAO, float roughness2) {
+	return clamp(pow(NdotV + diffuseAO, exp2(-16.0 * roughness2 - 1.0)) - 1.0 + diffuseAO, 0.0, 1.0);
 	// return diffuseAO;
 }
 
-
-// https://github.com/beyond-all-reason/RecoilEngine/blob/aed81b7cc721aa964f850ec9960af287f66bf98c/cont/base/springcontent/shaders/GLSL/BumpWaterFS.glsl#L24
-vec3 GetReflection(float angle, vec3 normal)
+mat4 rotationMatrix(vec3 axis, float angle)
 {
-	vec3 reflColor = vec3(0.0, 0.0, 0.0);
-	#ifdef REFLECTION
-		vec2 screenPos = gl_FragCoord.xy - ViewPos;
-		vec2 screencoord = screenPos * ScreenTextureSizeInverse;
-		vec2 reftexcoord = screenPos * ScreenInverse;
-
-		// we have to mirror the Y-axis
-		reftexcoord  = vec2(reftexcoord.x, 1.0 - reftexcoord.y);
-		reftexcoord += vec2(0.0, 3.0 * ScreenInverse.y) + normal.xz * 0.09 * ReflDistortion;
-
-		reflColor = texture2D(reflection, reftexcoord).rgb;
-
-		// #ifdef BLUR_REFLECTION
-		// 	vec2  v = BlurBase;
-		// 	float s = BlurExponent;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s*s).rgb;
-		// 	reflColor += texture2D(reflection, reftexcoord.st + v *s*s*s*s*s*s).rgb;
-		// 	reflColor *= 0.125;
-		// #endif // BLUR_REFLECTION
-	#endif // REFLECTION
-
-	return reflColor;
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+    
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
 }
 
-
 void main() {
-	if (IN.uv_wave_height.x > float(mapSize.x) || IN.uv_wave_height.y > float(mapSize.y)
-		|| IN.uv_wave_height.x < 0.0 || IN.uv_wave_height.y < 0.0)
+	const vec2 uv = IN.uv_wave_height.xy;
+	if (uv.x > float(mapSize.x) ||
+		uv.y > float(mapSize.y) ||
+		uv.x < 0.0 ||
+		uv.y < 0.0)
 	{
 		discard;
 	}
-
-	const vec3 v = cameraViewInv[3].xyz - IN.world_vertex_position_distance.xyz;
 
 	// Read foam and normal information from normal maps.
 	vec3 gradient = vec3(0.0);
 	for (uint i = 0U; i < NUM_CASCADES; ++i) {
 		const float uv_scale = 1.0 / cascade_length[i];
-		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(i));
+		const vec3 coords = vec3(uv*uv_scale, float(i));
 		const vec3 normal_scale = vec3(vec2(cascade_normal_scale[i]), 1.0);
 		#ifdef TEXTURE_FILTERING_BILINEAR
 			const vec4 bilinear = texture(normal_map, coords);
@@ -227,6 +209,7 @@ void main() {
 		#endif
 	}
 
+	// FIXME gradient.z is multiplied by the normal scale. Do we want that?
 	const float foam_factor = min(
 		smoothstep(0.0, 1.0, gradient.z),
 		1.0 - smoothstep(FOAM_FALLOFF_START, FOAM_FALLOFF_END, IN.world_vertex_position_distance.w)
@@ -235,30 +218,36 @@ void main() {
 	const vec3 albedo = mix(water_color.rgb, foam_color.rgb, foam_factor);
 
 	const float roughness = clamp(subsurface_color.a, 0.2, 1.0);
-	const float ao_term = 1.0;
+	const float diffuseAO = 1.0;
 
 	const float roughness2 = roughness * roughness;
 	const float roughness4 = roughness2 * roughness2;
 
-	const vec3 F0 = vec3(DEFAULT_F0) * albedo;
-	const float reflectance = max(F0.r, max(F0.g, F0.b));
-	const vec3 F90 = vec3(clamp(reflectance * 50.0, 1.0, 1.0));
+	const float METALNESS = 0.0;
+	vec3 F0 = vec3(DEFAULT_F0);
+	vec3 F90;
+	{
+		F0 = clamp(mix(F0, albedo, METALNESS), F0, albedo);
+		const float reflectance = max(F0.r, max(F0.g, F0.b));
+		F90 = vec3(clamp(reflectance * 10.0, 0.0, 1.0));
+	}
 
 	const vec3 N = normalize(vec3(-gradient.x, 1.0, -gradient.y));
 	// L - worldLightDir
 	const vec3 L = normalize(sunDir.xyz); //from fragment to light, world space
 	// V - worldCameraDir
-	const vec3 V = normalize(v);
-	// H - worldHalfVec
-	const vec3 H = normalize(L + V); //half vector
+	const vec3 view = cameraViewInv[3].xyz - IN.world_vertex_position_distance.xyz;
+	const vec3 V = normalize(view);
 	// R - reflection of worldCameraDir against worldFragNormal
 	const vec3 Rv = -reflect(V, N);
+	// H - worldHalfVec
+	const vec3 H = normalize(L + V); //half vector
 
 	// dot products
-	const float NdotL = clamp(dot(N, L), 1e-5, 1.0);
-	const float NdotH = clamp(dot(H, N), 1e-5, 1.0);
-	const float NdotV = clamp(dot(N, V), 1e-5, 1.0);
-	const float VdotH = clamp(dot(V, H), 1e-5, 1.0);
+	const float NdotL = clamp(dot(N, L), EPSILON32, 1.0);
+	const float NdotH = clamp(dot(H, N), EPSILON32, 1.0);
+	const float NdotV = clamp(dot(N, V), EPSILON32, 1.0);
+	const float VdotH = clamp(dot(V, H), EPSILON32, 1.0);
 
 	// TODO fix subsurface scattering
 	// float VdotN = clamp(dot(V, N), 0.0, 1.0);
@@ -278,9 +267,12 @@ void main() {
 	// ) * (1.0 - fresnel) * sunDiffuseModel.rgb;
 	// diffuse += sss_light;
 
-	const vec2 envBRDF = vec2(0.0);// textureLod(brdfLUT, vec2(NdotV, roughness), 0.0).rg;
-
-	const vec3 energyCompensation =  clamp(1.0 + F0 * (1.0 / max(envBRDF.x, 1e-5) - 1.0), vec3(1.0), vec3(2.0));
+	const vec2 envBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
+	const vec3 energyCompensation = clamp(
+		1.0 + F0 * (1.0 / max(envBRDF.x, EPSILON32) - 1.0),
+		vec3(1.0),
+		vec3(2.0)
+	);
 
 	vec3 dirContrib = vec3(0.0);
 	vec3 outSpecularColor = vec3(0.0);
@@ -289,13 +281,17 @@ void main() {
 		const float Vis = VisibilityOcclusionFast(NdotL, NdotV, roughness2);
 		const float D = MicrofacetDistribution(NdotH, roughness4);
 
-		// float geometric_attenuation = Vis * 1.0 / (1.0 + light_mask + view_mask);
-
 		outSpecularColor = F * Vis * D /* * PI */;
 
 		const float shadowMult = 1.0;
-		vec3 maxSun = mix(sunSpecularModel.rgb, sunDiffuseModel.rgb, step(dot(sunSpecularModel.rgb, LUMA), dot(sunDiffuseModel.rgb, LUMA)));
-
+		vec3 maxSun = mix(
+			sunSpecularModel.rgb,
+			sunDiffuseModel.rgb,
+			step(
+				dot(sunSpecularModel.rgb, LUMA),
+				dot(sunDiffuseModel.rgb, LUMA)
+			)
+		);
 		#ifdef SUNMULT
 			maxSun *= SUNMULT;
 		#endif
@@ -308,17 +304,17 @@ void main() {
 		outSpecularColor *= energyCompensation;
 
 		// kS is equal to Fresnel
-		//vec3 kS = F;
+		vec3 kS = F;
 
 		// for energy conservation, the diffuse and specular light can't
 		// be above 1.0 (unless the surface emits light); to preserve this
 		// relationship the diffuse component (kD) should equal 1.0 - kS.
-		const vec3 kD = vec3(1.0) - F;
+		vec3 kD = vec3(1.0) - kS;
 
 		// multiply kD by the inverse metalness such that only non-metals
 		// have diffuse lighting, or a linear blend if partly metal (pure metals
 		// have no diffuse light).
-		// kD *= 1.0 - metalness;
+		kD *= 1.0 - METALNESS;
 
 		// add to outgoing radiance dirContrib
 		dirContrib  = maxSun * (kD * albedo /* PI */) * NdotL * shadowMult;
@@ -336,18 +332,40 @@ void main() {
 		// ambient lighting (we now use IBL as the ambient term)
 		const vec3 F = FresnelSchlickWithRoughness(F0, F90, VdotH, roughness);
 
-		//vec3 kS = F;
-		const vec3 kD = 1.0 - F;
-		// kD *= 1.0 - metalness;
+		vec3 kS = F;
+		vec3 kD = vec3(1.0) - F;
+		kD *= 1.0 - METALNESS;
 
 		iblDiffuse = sunAmbientModel.rgb;
+		const vec3 diffuse = iblDiffuse * albedo * diffuseAO;
 
-		const vec3 diffuse = iblDiffuse * albedo * ao_term;
-
+		// https://github.com/beyond-all-reason/RecoilEngine/blob/aed81b7cc721aa964f850ec9960af287f66bf98c/cont/base/springcontent/shaders/GLSL/BumpWaterFS.glsl#L24
 		vec3 reflectionColor = vec3(0.0);
-		reflectionColor = mix(reflectionColor, iblSpecular, roughness);
+		#ifdef REFLECTION
+			vec2 ScreenTextureSizeInverse = 1.0 / viewGeometry.xy;
+			vec2 ScreenInverse = 1.0 / viewGeometry.xy;
+			vec2 screenPos = gl_FragCoord.xy;
+			vec2 reftexcoord = screenPos * ScreenInverse;
+			reftexcoord  = vec2(reftexcoord.x, 1.0 - reftexcoord.y);
+			reftexcoord += vec2(0.0, 3.0 * ScreenInverse.y) + N.xz * 0.09 * float(REFLECTION_DISTORTION);
 
-		const float aoTermSpec = ComputeSpecularAOFilament(NdotV, ao_term, roughness2);
+			reflectionColor = texture2D(reflection, reftexcoord).rgb;
+
+			#ifdef REFLECTION_BLUR
+				const float v = REFLECTION_BLUR_BASE;
+				const float s = REFLECTION_BLUR_EXPONENT;
+				reflectionColor += texture2D(reflection, reftexcoord + v).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s*s).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s*s*s).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s*s*s*s).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s*s*s*s*s).rgb;
+				reflectionColor += texture2D(reflection, reftexcoord + v *s*s*s*s*s*s).rgb;
+				reflectionColor *= 0.125; // 1.0 / 8.0;
+			#endif
+		#endif
+
+		const float aoTermSpec = ComputeSpecularAOFilament(NdotV, diffuseAO, roughness2);
 		specular = reflectionColor * (F0 * envBRDF.x + F90 * envBRDF.y);
 		specular *= aoTermSpec * energyCompensation;
 
@@ -357,11 +375,7 @@ void main() {
 		(1.0-foam_factor) * water_color.a +
 		foam_factor * foam_color.a;
 
-	// float angle = (1.0 - abs(Rv));
-	// const vec3 reflection_color = GetReflection(angle, N);
-
 	vec3 color = ambientContrib.xyz + dirContrib.xyz;
-	// color *= 2.0; // hacks
 
 	#ifdef DEBUG_COLOR_CLIPMAP
 		uint ulayer = uint(IN.tile.w);
@@ -383,14 +397,14 @@ void main() {
 
 	#ifdef DEBUG_COLOR_TEXTURE_DISPLACEMENT
 		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_DISPLACEMENT]);
-		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(DEBUG_COLOR_TEXTURE_DISPLACEMENT));
+		const vec3 coords = vec3(uv*uv_scale, float(DEBUG_COLOR_TEXTURE_DISPLACEMENT));
 		color = texture(displacement_map, coords).xyz;
 		alpha = 1.0;
 	#endif
 
 	#ifdef DEBUG_COLOR_TEXTURE_NORMAL
 		const vec2 uv_scale = vec2(1.0 / cascade_length[DEBUG_COLOR_TEXTURE_NORMAL]);
-		const vec3 coords = vec3(IN.uv_wave_height.xy*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
+		const vec3 coords = vec3(uv*uv_scale, float(DEBUG_COLOR_TEXTURE_NORMAL));
 		color = texture(normal_map, coords).xyz;
 		alpha = 1.0;
 	#endif

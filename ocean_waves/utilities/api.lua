@@ -220,6 +220,37 @@ function API:Init(state)
 		end
 	end
 
+	--- /oceanwaves set_reflection_enabled value
+	---@param enabled bool
+	function set_reflection_enabled(value)
+		state.material.reflections.enabled = value
+		state:RebuildPipeline()
+	end
+	--- /oceanwaves set_reflection_distortion value
+	---@param distortion number
+	function set_reflection_distortion(value)
+		state.material.reflections.distortion = value
+		state:RebuildPipeline()
+	end
+	--- /oceanwaves set_reflection_blur_enabled value
+	---@param blur_enabled bool
+	function set_reflection_blur_enabled(value)
+		state.material.reflections.blur_enabled = value
+		state:RebuildPipeline()
+	end
+	--- /oceanwaves set_reflection_blur_base value
+	---@param blur_base number
+	function set_reflection_blur_base(value)
+		state.material.reflections.blur_base = value
+		state:RebuildPipeline()
+	end
+	--- /oceanwaves set_reflection_blur_exponent value
+	---@param blur_exponent number
+	function set_reflection_blur_exponent(value)
+		state.material.reflections.blur_exponent = value
+		state:RebuildPipeline()
+	end
+
 	--- /oceanwaves settexturefiltering value
 	---@param value string
 	function set_texture_filtering(value)
@@ -487,6 +518,11 @@ function API:Init(state)
 		set_foam_falloff_range = set_foam_falloff_range,
 		set_subsurface_color = set_subsurface_color,
 		set_roughness = set_roughness,
+		set_reflection_enabled = set_reflection_enabled,
+		set_reflection_distortion = set_reflection_distortion,
+		set_reflection_blur_enabled = set_reflection_blur_enabled,
+		set_reflection_blur_base = set_reflection_blur_base,
+		set_reflection_blur_exponent = set_reflection_blur_exponent,
 		set_texture_filtering = set_texture_filtering,
 		get_material = function() return deep_copy(state.material) end,
 		get_water_color = function() return deep_copy(state.material.water_color) end,
@@ -495,6 +531,7 @@ function API:Init(state)
 		get_foam_alpha = function() return state.material.foam_alpha end,
 		get_subsurface_color = function() return deep_copy(state.material.subsurface_color) end,
 		get_roughness = function() return state.material.roughness end,
+		are_reflections_supported = function() return gl.DrawWaterReflections ~= nil end,
 
 		set_mesh_size = set_mesh_size,
 		set_mesh_grid_count = set_mesh_grid_count,
