@@ -320,14 +320,31 @@ function generate_clipmap_tile_instance_data(instance_data, layer, visibility)
 	local corners = {}
 	for i,id in ipairs(visibility) do
 		local rotation = 0
-		if id<4 then -- top
-			rotation = 2
-		elseif id==7 or id==11 then -- right
-			rotation = 1
-		elseif id>11 then -- bottom
-			rotation = 0
-		elseif id==4 or id==8 then -- left
-			rotation = 3
+		-- listed in clockwise order
+		--  0,  1,  2,  3,
+		--  4,          7,
+		--  8,         11,
+		-- 12, 13, 14, 15
+		-- 0 = 0
+		-- 1 = 90
+		-- 2 = 180
+		-- 3 = 270
+		-- top 2
+		if     id==0  then rotation = 2 -- left
+		elseif id==1  then rotation = 2 -- center left
+		elseif id==2  then rotation = 2 -- center right
+		elseif id==3  then rotation = 1 -- right
+		-- right 1
+		elseif id==7  then rotation = 1 -- top
+		elseif id==11 then rotation = 1 -- bottom
+		-- bottom 0
+		elseif id==15 then rotation = 0 -- right
+		elseif id==14 then rotation = 0 -- center right
+		elseif id==13 then rotation = 0 -- center left
+		elseif id==12 then rotation = 3 -- left
+		-- left 3
+		elseif id==8  then rotation = 3 -- bottom
+		elseif id==4  then rotation = 3 -- top
 		end
 
 		-- corners go last
@@ -373,6 +390,7 @@ function generate_plane_vertices(size, grid_count)
 	return vbo
 end
 
+-- From bottom to top, left to right
 function gerenate_plane_indices(indices, grid_count, lod)
 	local lod_step = pow(2, lod)
 	local index_count = (grid_count/lod_step * grid_count/lod_step) * 6
