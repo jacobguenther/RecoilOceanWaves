@@ -304,118 +304,122 @@
 				</select>
 			</div>
 
-			<!-- FIXME: Can't loop cascades and use display: flex? -->
-			<div id="cascades_tab">
-					<!-- data-for="cascades"> -->
-					<!-- <span>test</span> -->
-					<!-- <button data-event-click="ui_selecte_cascade({{it_index+1}})">Cascade</button> -->
-					<button data-event-click="on_select_cascade(1)">Cascade 1</button>
-					<button data-event-click="on_select_cascade(2)">Cascade 2</button>
-					<button data-event-click="on_select_cascade(3)">Cascade 3</button>
+			<div id="cascades-header">
+				<h3 class="text-primary">Cascades</h3>
+				<div data-for="cascades" class="flex-center-space" id="cascades-header-buttons">
+					<!-- <span class="text-secondary">Cascade {{it_index+1}}</span> -->
+					<button data-event-click="on_enable_cascade(it_index+1)">{{it_index+1}}</button>
+				</div>
 			</div>
 
-			<div id="cascades" data-for="cascades">
-				<div data-if="it_index+1 == selected_cascade" data-attr-id="it_index+1">
-					<h3 class="text-primary">Cascade {{it_index+1}}</h3>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Tile Size(m)</label>
-						<input type="number"
-							min="1"
-							max="1024"
-							data-attr-value="cascades[it_index].tile_length"
-							data-event-change="on_cascade_change_tile_size(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Displacement Scale</label>
-						<input type="number"
-							min="0"
-							data-attr-value="cascades[it_index].displacement_scale"
-							data-event-change="on_cascade_change_displacement_scale(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Normal Scale</label>
-						<input type="number"
-							data-attr-value="cascades[it_index].normal_scale"
-							data-event-change="on_cascade_change_normal_scale(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Wind Speed(m/s)</label>
-						<input type="number"
-							min="0.0001"
-							max="1000"
-							data-attr-value="cascades[it_index].wind_speed"
-							data-event-change="on_cascade_change_wind_speed(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Wind Direction(deg)</label>
-						<input type="number"
-							min="-360"
-							max="360"
-							data-attr-value="cascades[it_index].wind_direction"
-							data-event-change="on_cascade_change_wind_direction(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Fetch Length(km)</label>
-						<input type="number"
-							min="0.0001"
-							max="10000"
-							data-attr-value="cascades[it_index].fetch_length_km"
-							data-event-change="on_cascade_change_fetch_length(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Swell</label>
-						<input type="number"
-							min="0"
-							max="2"
-							data-attr-value="cascades[it_index].swell"
-							data-event-change="on_cascade_change_swell(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Spread</label>
-						<input type="number"
-							min="0"
-							max="1"
-							data-attr-value="cascades[it_index].spread"
-							data-event-change="on_cascade_change_spread(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Detail</label>
-						<input type="number"
-							min="0"
-							max="1"
-							data-attr-value="cascades[it_index].detail"
-							data-event-change="on_cascade_change_detail(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Whitecap</label>
-						<input type="number"
-							min="0"
-							max="2"
-							data-attr-value="cascades[it_index].whitecap"
-							data-event-change="on_cascade_change_whitecap(it_index+1)"/>
-					</div>
-
-					<div class="flex-center-space">
-						<label class="text-secondary">Foam Amount</label>
-						<input type="number"
-							min="0"
-							max="10"
-							data-attr-value="cascades[it_index].foam_amount"
-							data-event-change="on_cascade_change_foam_amount(it_index+1)"/>
-					</div>
-				</div> <!-- cascade -->
-			</div> <!-- cascades -->
-		</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Tile Size(m)</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="1"
+						max="1024"
+						data-attr-value="cascades[it_index].tile_length"
+						data-event-change="on_cascade_change_tile_size(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Displacement Scale</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						data-attr-value="cascades[it_index].displacement_scale"
+						data-event-change="on_cascade_change_displacement_scale(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Normal Scale</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						data-attr-value="cascades[it_index].normal_scale"
+						data-event-change="on_cascade_change_normal_scale(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Wind Speed(m/s)</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0.0001"
+						max="1000"
+						data-attr-value="cascades[it_index].wind_speed"
+						data-event-change="on_cascade_change_wind_speed(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Wind Direction(deg)</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="-360"
+						max="360"
+						data-attr-value="cascades[it_index].wind_direction"
+						data-event-change="on_cascade_change_wind_direction(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Fetch Length(km)</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0.0001"
+						max="10000"
+						data-attr-value="cascades[it_index].fetch_length_km"
+						data-event-change="on_cascade_change_fetch_length(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Swell</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						max="2"
+						data-attr-value="cascades[it_index].swell"
+						data-event-change="on_cascade_change_swell(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Spread</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						max="1"
+						data-attr-value="cascades[it_index].spread"
+						data-event-change="on_cascade_change_spread(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Detail</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						max="1"
+						data-attr-value="cascades[it_index].detail"
+						data-event-change="on_cascade_change_detail(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Whitecap</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						max="2"
+						data-attr-value="cascades[it_index].whitecap"
+						data-event-change="on_cascade_change_whitecap(it_index+1)"/>
+				</div>
+			</div>
+			<div class="flex-center-space">
+				<label class="text-secondary">Foam Amount</label>
+				<div data-for="cascades" class="flex-center-space">
+					<input type="number"
+						min="0"
+						max="10"
+						data-attr-value="cascades[it_index].foam_amount"
+						data-event-change="on_cascade_change_foam_amount(it_index+1)"/>
+				</div>
+			</div>
+		</div> <!-- collapsable-section wave_visible-->
 
 		<h2 class="text-primary bg-darker collapsable-section-header"
 			data-event-click="minimize_section_toggle('debug')">Debug</h2>

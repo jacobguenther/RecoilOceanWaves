@@ -59,11 +59,11 @@ function widget:Initialize()
 		document_maximized = true,
 		minimize_toggle = minimize_toggle,
 
-		material_visible = true,
-		mesh_visible = true,
+		material_visible = false,
+		mesh_visible = false,
 		wind_visible = false,
 		gravity_visible = false,
-		wave_visible = false,
+		wave_visible = true,
 		debug_visible = false,
 		minimize_section_toggle = minimize_section_toggle,
 
@@ -95,7 +95,7 @@ function widget:Initialize()
 
 		selected_cascade = 1,
 		cascades = WG['oceanwaves'].get_cascades(),
-		on_select_cascade = on_select_cascade,
+		on_enable_cascade = on_enable_cascade,
 		on_cascade_change_tile_size = on_cascade_change_tile_size,
 		on_cascade_change_displacement_scale = on_cascade_change_displacement_scale,
 		on_cascade_change_normal_scale = on_cascade_change_normal_scale,
@@ -334,8 +334,8 @@ function on_wave_resolution_change(event)
 	WG['oceanwaves'].set_wave_resolution(value)
 end
 
-function on_select_cascade(event, i)
-	dm.selected_cascade = i
+function on_enable_cascade(event, cascade_id)
+	WG['oceanwaves'].toggle_cascade_enabled(cascade_id)
 end
 
 function on_cascade_change_tile_size(event, cascade_id)

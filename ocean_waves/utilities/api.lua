@@ -324,6 +324,10 @@ function API:Init(state)
 		rebuild_pipeline()
 	end
 
+	function toggle_cascade_enabled(cascade_index)
+		Spring.Echo("TODO")
+	end
+
 	--- /oceanwaves setcascadetilelength cascade_index value
 	---@param cascade_index number
 	---@param value number
@@ -548,6 +552,7 @@ function API:Init(state)
 		set_wave_resolution = set_wave_resolution,
 		get_wave_resolution = function() return state.wave_resolution end,
 
+		toggle_cascade_enabled = toggle_cascade_enabled,
 		set_cascade_tile_length = set_cascade_tile_length,
 		set_cascade_displacement_scale = set_cascade_displacement_scale,
 		set_cascade_normal_scale = set_cascade_normal_scale,

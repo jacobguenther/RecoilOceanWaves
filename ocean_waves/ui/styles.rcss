@@ -42,11 +42,39 @@ h1, h2, h3 {
 	padding-bottom: 10dp;
 }
 
-#cascades_tab {
+#cascades-header {
 	display: flex;
-	width: 600dp;
-	padding-top: 10dp;
 	align-items: center;
+
+	max-width: 600dp;
+	padding-top: 10dp;
+	margin-right: 20dp;
+
+	border-color: #E6A532;
+	border-bottom-width: 2dp;
+}
+#cascades-header h3 {
+	width: 200dp;
+	padding-bottom: 0dp;
+	margin-bottom: 0dp;
+}
+#cascades-header div {
+	display: flex;
+	align-items: center;
+	justify-items: left;
+
+	max-width: 400dp;
+}
+#cascades-header div button {
+	width: 80dp;
+	/* height: 16dp; */
+
+	padding: 0dp;
+	margin-right: 20dp;
+	margin-bottom: 5dp;
+
+	/* align-items: center; */
+	/* margin-right: 20dp; */
 }
 
 .flex-center-space {
@@ -62,8 +90,8 @@ h1, h2, h3 {
 	max-width: 100dp;
 	margin-right: 20dp;
 }
-.flex-center-space > span {
-	width: 100dp;
+.flex-center-space > input[type=number] {
+	width: 80dp;
 }
 .flex-center-space > select {
 	width: 125dp;
