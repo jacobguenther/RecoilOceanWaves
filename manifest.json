@@ -1,0 +1,14 @@
+{
+	"id": "ocean_waves",
+	"display_name": "Ocean Waves",
+	"author": "chmod777",
+	"description": "A new water renderer for BAR.",
+	"homepage_url": "https://discord.com/channels/549281623154229250/1387909127233339482",
+	"sourcecode_url": "https://github.com/jacobguenther/RecoilOceanWaves",
+	"date_created": "2025-08-29",
+	"version": "1.0.0",
+	"install": {
+		"/LuaUI/Widgets/ocean_waves": "ocean_waves"
+	},
+	"manual_install_only": true
+}
