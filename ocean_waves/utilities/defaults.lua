@@ -29,7 +29,7 @@ local defaults = {
 		foam_falloff_distance = 8192,
 
 		subsurface_color = {r = 0.90, g = 1.15, b = 0.85},
-		roughness = 0.65,
+		roughness = 0.7,
 
 		reflections = {
 			enabled = true,
@@ -50,7 +50,7 @@ local defaults = {
 			-- texture_y = 512, -- viewGeometryY,
 		},
 
-		texture_filtering = "default" -- "default"/"mixed" | "bilinear" | "bicubic"
+		texture_filtering = "bicubic" -- "default"/"mixed" | "bilinear" | "bicubic"
 	},
 	mesh = {
 		size = 1024,
@@ -64,6 +64,8 @@ local defaults = {
 	wave_resolution = 1024,
 	cascades = {
 		{
+			enabled = true,
+
 			tile_length = 997.0,
 			displacement_scale = 1.0,
 			normal_scale = 1,
@@ -80,6 +82,8 @@ local defaults = {
 			foam_amount = 4.0,
 		},
 		{
+			enabled = true,
+
 			tile_length = 751.0,
 			displacement_scale = 1.0,
 			normal_scale = 1,
@@ -96,6 +100,8 @@ local defaults = {
 			foam_amount = 4.0,
 		},
 		{
+			enabled = true,
+
 			tile_length = 293.0,
 			displacement_scale = 1.0,
 			normal_scale = 1,

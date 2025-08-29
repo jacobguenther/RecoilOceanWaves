@@ -261,22 +261,24 @@ function as_cacades_std430(cascades)
 	local std430 = {}
 	for i=1, #cascades do
 		local cascade = cascades[i]
-		std430[#std430+1] = cascade.displacement_scale
-		std430[#std430+1] = cascade.normal_scale
-		std430[#std430+1] = cascade.tile_length
-		std430[#std430+1] = cascade.alpha
-		std430[#std430+1] = cascade.omega
-		std430[#std430+1] = cascade.wind_speed
-		std430[#std430+1] = cascade.wind_direction_rad
-		std430[#std430+1] = cascade.depth
-		std430[#std430+1] = cascade.swell
-		std430[#std430+1] = cascade.detail
-		std430[#std430+1] = cascade.spread
-		std430[#std430+1] = 0 -- time
-		std430[#std430+1] = i-1+0.5
-		std430[#std430+1] = cascade.whitecap
-		std430[#std430+1] = last_dt * cascade.foam_amount * 7.5
-		std430[#std430+1] = last_dt * max(0.5, 10.0 - cascade.foam_amount) * 1.5
+		if cascade.enabled then
+			std430[#std430+1] = cascade.displacement_scale
+			std430[#std430+1] = cascade.normal_scale
+			std430[#std430+1] = cascade.tile_length
+			std430[#std430+1] = cascade.alpha
+			std430[#std430+1] = cascade.omega
+			std430[#std430+1] = cascade.wind_speed
+			std430[#std430+1] = cascade.wind_direction_rad
+			std430[#std430+1] = cascade.depth
+			std430[#std430+1] = cascade.swell
+			std430[#std430+1] = cascade.detail
+			std430[#std430+1] = cascade.spread
+			std430[#std430+1] = 0 -- time
+			std430[#std430+1] = i-1+0.5
+			std430[#std430+1] = cascade.whitecap
+			std430[#std430+1] = last_dt * cascade.foam_amount * 7.5
+			std430[#std430+1] = last_dt * max(0.5, 10.0 - cascade.foam_amount) * 1.5
+		end
 	end
 	return std430
 end
@@ -289,6 +291,7 @@ local state = {
 	mesh = nil,
 
 	wave_resolution = nil,
+	cascade_count = 0,
 	cascades = nil,
 
 	upload_cascades_ssbo = true,
@@ -304,6 +307,11 @@ function state:Init(settings)
 
 	state.wave_resolution = settings.wave_resolution
 	state.cascades = deep_copy(settings.cascades)
+	for i=1, #state.cascades do
+		if state.cascades[i].enabled then
+			state.cascade_count = state.cascade_count + 1
+		end
+	end
 	state:CascadesInit()
 
 	state.debug = deep_copy(settings.debug)
@@ -408,8 +416,8 @@ end
 function init_pipeline_values()
 	local wave_resolution = state.wave_resolution
 	num_fft_stages = log(wave_resolution) / log(2)
-	fft_size = wave_resolution*wave_resolution*4*2*#state.cascades
-	butterfly_size = wave_resolution*num_fft_stages*#state.cascades
+	fft_size = wave_resolution*wave_resolution*4*2*state.cascade_count
+	butterfly_size = wave_resolution*num_fft_stages*state.cascade_count
 
 	butterfly_dispatch_size = wave_resolution/2/64
 	spectrum_dispatch_size = wave_resolution / SPECTRUM_TILE_SIZE
@@ -505,7 +513,7 @@ function init_shaders()
 			state.material.foam_falloff_start+state.material.foam_falloff_distance..")\n"..
 
 		"#define WAVE_RES ("..state.wave_resolution..")\n"..
-		"#define NUM_CASCADES ("..#state.cascades..")\n"..
+		"#define NUM_CASCADES ("..state.cascade_count..")\n"..
 		"#define NUM_SPECTRA (4)\n"..
 
 		"#define TRANSPOSE_TILE_SIZE ("..TRANSPOSE_TILE_SIZE..")\n"..
@@ -603,9 +611,9 @@ function init_textures()
 	if reflections_supported then
 		reflection_fbo = FBO:new(reflection_texture_x, reflection_texture_x, true)
 	end
-	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=#state.cascades}, 0, GL_RGBA16F)
-	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 1, GL_RGBA16F)
-	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=#state.cascades}, 2, GL_RGBA16F)
+	spectrum_texture = Texture:new('spectrum', { x=wave_resolution, y=wave_resolution, z=state.cascade_count}, 0, GL_RGBA16F)
+	displacement_map = Texture:new('displacement_map', {x=wave_resolution, y=wave_resolution, z=state.cascade_count}, 1, GL_RGBA16F)
+	normal_map = Texture:new('normal_map', {x=wave_resolution, y=wave_resolution, z=state.cascade_count}, 2, GL_RGBA16F)
 	depth_map = Texture:new('depth_map', {x=map_size_x/depth_map_divider, y=map_size_z/depth_map_divider, z=1}, 3, GL_RGBA16F)
 end
 function init_buffers()
@@ -615,7 +623,7 @@ function init_buffers()
 	})
 
 	cascades_ssbo = glGetVBO(GL_SHADER_STORAGE_BUFFER, false)
-	cascades_ssbo:Define(#state.cascades, {
+	cascades_ssbo:Define(state.cascade_count, {
 		{id=0, name="cascades", --[[ type=LuaVBOImpl::DEFAULT_BUFF_ATTR_TYPE vec4, ]] size=cascade_size/4}
 	})
 	-- cascades_ssbo:DumpDefinition()
@@ -733,6 +741,7 @@ function widget:DrawGenesis()
 		update_butterfly = false
 	end
 
+	-- FIXME: create function next cascade index that gets the next enabled cascade
 	if current_cascade_index == 0 then
 		current_cascade_index = #state.cascades-1
 	else
@@ -748,7 +757,7 @@ function widget:DrawGenesis()
 	if current_cascade.should_generate_spectrum then
 		cascades_ssbo:BindBufferRange(6, nil, nil, GL_SHADER_STORAGE_BUFFER)
 		glUseShader(spectrum_comp)
-		glDispatchCompute(spectrum_dispatch_size, spectrum_dispatch_size, #state.cascades, nil)
+		glDispatchCompute(spectrum_dispatch_size, spectrum_dispatch_size, state.cascade_count, nil)
 		for i=1, #state.cascades do
 			state.cascades[i].should_generate_spectrum = false
 		end
@@ -817,21 +826,30 @@ function draw_water()
 		local max_cascades = 4
 		local cascade_uniform = {}
 		for i=1, #state.cascades do
-			cascade_uniform[#cascade_uniform+1] = state.cascades[i].displacement_scale
+			local cascade = state.cascades[i]
+			if cascade.enabled then
+				cascade_uniform[#cascade_uniform+1] = cascade.displacement_scale
+			end
 		end
 		for i=1, (max_cascades)-#state.cascades do
 			cascade_uniform[#cascade_uniform+1] = 0
 		end
 
 		for i=1, #state.cascades do
-			cascade_uniform[#cascade_uniform+1] = state.cascades[i].normal_scale
+			local cascade = state.cascades[i]
+			if cascade.enabled then
+				cascade_uniform[#cascade_uniform+1] = cascade.normal_scale
+			end
 		end
 		for i=1, (max_cascades)-#state.cascades do
 			cascade_uniform[#cascade_uniform+1] = 0
 		end
 
 		for i=1, #state.cascades do
-			cascade_uniform[#cascade_uniform+1] = state.cascades[i].tile_length
+			local cascade = state.cascades[i]
+			if cascade.enabled then
+				cascade_uniform[#cascade_uniform+1] = cascade.tile_length
+			end
 		end
 		for i=1, (max_cascades)-#state.cascades do
 			cascade_uniform[#cascade_uniform+1] = 0

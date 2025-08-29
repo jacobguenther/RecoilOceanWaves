@@ -144,13 +144,13 @@ void main() {
 	// displacement = vec3(0.0, displacement.y, 0.0);
 
 	// TODO: Dampen displacement when in shallow water
-	const float distance_factor = 1.0 - smoothstep(DISPLACEMENT_FALLOFF_START, DISPLACEMENT_FALLOFF_END, dist);
+	const float displacement_factor = 1.0 - smoothstep(DISPLACEMENT_FALLOFF_START, DISPLACEMENT_FALLOFF_END, dist);
 
-	const vec3 world_vertex_position = coord + displacement * distance_factor;
+	const vec3 world_vertex_position = coord + displacement * displacement_factor;
 	const vec4 vertex_position = cameraViewProj * vec4(world_vertex_position, 1.0);
 
 	gl_Position = vertex_position;
-	OUT.uv_wave_height = vec4(uv, displacement.y, 0.0);
+	OUT.uv_wave_height = vec4(uv, displacement.y, displacement_factor);
 	OUT.world_vertex_position_distance = vec4(world_vertex_position, dist);
 	OUT.tile = instance_data;
 }

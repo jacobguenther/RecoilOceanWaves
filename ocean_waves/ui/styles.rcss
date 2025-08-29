@@ -61,7 +61,6 @@ h1, h2, h3 {
 #cascades-header div {
 	display: flex;
 	align-items: center;
-	justify-items: left;
 
 	max-width: 400dp;
 }
@@ -88,10 +87,14 @@ h1, h2, h3 {
 }
 .flex-center-space > input {
 	max-width: 100dp;
-	margin-right: 20dp;
+	margin-right: 10dp;
+}
+.flex-center-space > span {
+	max-width: 100dp;
+	margin-right: 10dp;
 }
 .flex-center-space > input[type=number] {
-	width: 80dp;
+	width: 70dp;
 }
 .flex-center-space > select {
 	width: 125dp;

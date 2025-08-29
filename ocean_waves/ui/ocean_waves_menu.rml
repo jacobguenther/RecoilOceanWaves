@@ -15,7 +15,7 @@
 	<handle class="bg-black" move_target="#document">
 		<h1 class="text-primary">Ocean Waves</h1>
 		<button data-event-click="minimize_toggle()">_</button>
-		<button data-event-click="hidden_toggle()">X</button>
+		<button data-event-click="on_exit()">X</button>
 	</handle>
 
 	<div class="bg-darkest" data-if="document_maximized">
@@ -24,7 +24,7 @@
 
 		<div class="collapsable-section" data-if="material_visible">
 			<div class="flex-center-space">
-				<label class="text-secondary">Water Color(rgb)</label>
+				<label class="text-secondary">Water Color(rgba)</label>
 				<input type="number"
 					min = 0
 					max = 1
@@ -48,7 +48,7 @@
 			</div>
 
 			<div class="flex-center-space">
-				<label class="text-secondary">Foam Color(rgb)</label>
+				<label class="text-secondary">Foam Color(rgba)</label>
 				<input type="number"
 					min = 0
 					max = 1
@@ -89,19 +89,16 @@
 			<div class="flex-center-space">
 				<label class="text-secondary">Subsurface Color(TODO)</label>
 				<input type="number"
-					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.r"
 					data-event-change="on_material_change('subsurface_color', 'r')" />
 				<input type="number"
-					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.g"
 					data-event-change="on_material_change('subsurface_color', 'g')" />
 				<input type="number"
-					disabled
 					min = 0
 					max = 2
 					data-attr-value="material.subsurface_color.b"
@@ -319,7 +316,7 @@
 						min="1"
 						max="1024"
 						data-attr-value="cascades[it_index].tile_length"
-						data-event-change="on_cascade_change_tile_size(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_tile_length')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -328,7 +325,7 @@
 					<input type="number"
 						min="0"
 						data-attr-value="cascades[it_index].displacement_scale"
-						data-event-change="on_cascade_change_displacement_scale(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_displacement_scale')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -336,7 +333,7 @@
 				<div data-for="cascades" class="flex-center-space">
 					<input type="number"
 						data-attr-value="cascades[it_index].normal_scale"
-						data-event-change="on_cascade_change_normal_scale(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_normal_scale')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -346,7 +343,7 @@
 						min="0.0001"
 						max="1000"
 						data-attr-value="cascades[it_index].wind_speed"
-						data-event-change="on_cascade_change_wind_speed(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_wind_speed')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -356,7 +353,7 @@
 						min="-360"
 						max="360"
 						data-attr-value="cascades[it_index].wind_direction"
-						data-event-change="on_cascade_change_wind_direction(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_wind_direction')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -366,7 +363,7 @@
 						min="0.0001"
 						max="10000"
 						data-attr-value="cascades[it_index].fetch_length_km"
-						data-event-change="on_cascade_change_fetch_length(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_fetch_length')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -376,7 +373,7 @@
 						min="0"
 						max="2"
 						data-attr-value="cascades[it_index].swell"
-						data-event-change="on_cascade_change_swell(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_swell')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -386,7 +383,7 @@
 						min="0"
 						max="1"
 						data-attr-value="cascades[it_index].spread"
-						data-event-change="on_cascade_change_spread(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_spread')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -396,7 +393,7 @@
 						min="0"
 						max="1"
 						data-attr-value="cascades[it_index].detail"
-						data-event-change="on_cascade_change_detail(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_detail')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -406,7 +403,7 @@
 						min="0"
 						max="2"
 						data-attr-value="cascades[it_index].whitecap"
-						data-event-change="on_cascade_change_whitecap(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_whitecap')"/>
 				</div>
 			</div>
 			<div class="flex-center-space">
@@ -416,7 +413,7 @@
 						min="0"
 						max="10"
 						data-attr-value="cascades[it_index].foam_amount"
-						data-event-change="on_cascade_change_foam_amount(it_index+1)"/>
+						data-event-change="on_cascade_parameter_change(it_index+1, 'set_cascade_foam_amount')"/>
 				</div>
 			</div>
 		</div> <!-- collapsable-section wave_visible-->

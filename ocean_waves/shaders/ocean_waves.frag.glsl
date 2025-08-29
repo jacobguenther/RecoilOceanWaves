@@ -78,7 +78,7 @@ layout (location = 8) uniform vec4 foam_color;       // rgb, foam_alpha
 layout (location = 9) uniform vec4 subsurface_color; // rgb, roughness
 
 in DataVS {
-	vec4 uv_wave_height; // w unused
+	vec4 uv_wave_height; // uv, wave_height, displacement_factor
 	vec4 world_vertex_position_distance;
 	flat vec4 tile; // id, rotation, scale, layer
 } IN;
@@ -100,6 +100,12 @@ vec4 cubic_weights(float a) {
 	float w1 = a3*3.0 - a2*6.0         + 4.0;
 	float w2 =-a3*3.0 + a2*3.0 + a*3.0 + 1.0;
 	float w3 = a3;
+
+	// vec3 vec3a = vec3(a, a2, a3) * 3.0;
+	// float w0 =-a3 + vec3a.y - vec3a.x + 1.0;
+	// float w1 = vec3a.z - a2*6.0 + 4.0;
+	// float w2 =-vec3a.z + vec3a.y + vec3a.x + 1.0;
+	// float w3 = a3;
 	return vec4(w0, w1, w2, w3) / 6.0;
 }
 
@@ -109,6 +115,7 @@ vec4 texture_bicubic(in sampler2DArray sampler_2d_array, in vec3 uvw) {
 	vec2 dims = vec2(textureSize(sampler_2d_array, 0).xy);
 	vec2 dims_inv = 1.0 / dims;
 	uvw.xy = uvw.xy*dims + 0.5;
+	// uvw.xy = fma(uvw.xy, dims, vec2(0.5));
 
 	vec2 fuv = fract(uvw.xy);
 	vec4 wx = cubic_weights(fuv.x);
@@ -121,32 +128,27 @@ vec4 texture_bicubic(in sampler2DArray sampler_2d_array, in vec3 uvw) {
 		mix(texture(sampler_2d_array, vec3(h.yw, uvw.z)), texture(sampler_2d_array, vec3(h.xw, uvw.z)), w.x),
 		mix(texture(sampler_2d_array, vec3(h.yz, uvw.z)), texture(sampler_2d_array, vec3(h.xz, uvw.z)), w.x), w.y);
 }
-float smith_masking_shadowing(in float cos_theta, in float alpha) {
-	float a = cos_theta / (alpha * sqrt(1.0 - cos_theta*cos_theta)); // Approximate: 1.0 / (alpha * tan(acos(cos_theta)))
-	float a_sq = a*a;
-	return a < 1.6 ? (1.0 - 1.259*a + 0.396*a_sq) / (3.535*a + 2.181*a_sq) : 0.0;
-}
-float ocean_waves_fresnel(in float VdotN, in float roughness, in float reflectance) {
-	return mix(
-		pow(1.0 - VdotN, 5.0*exp(-2.69*roughness)) / (1.0 + 22.7*pow(roughness, 1.5)),
-		1.0,
-		reflectance
-	);
-}
 
 
 // Fresnel - Schlick
 // F term
 vec3 FresnelSchlick(vec3 R0, vec3 R90, float VdotH) {
 	return R0 + (R90 - R0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
+	// return fma((R90 - R0), vec3(pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0)), R0);
 }
 // Fresnel - Schlick with Roughness - LearnOpenGL
 vec3 FresnelSchlickWithRoughness(vec3 R0, vec3 R90, float VdotH, float roughness) {
 	return R0 + (max(R90 - vec3(roughness), R0) - R0) * pow(1.0 - VdotH, 5.0);
+	// return fma((max(R90 - vec3(roughness), R0) - R0), vec3(pow(1.0 - VdotH, 5.0)), R0);
+
 }
 float VisibilityOcclusionFast(float NdotL, float NdotV, float roughness2) {
 	float GGXV = NdotL * (NdotV * (1.0 - roughness2) + roughness2);
 	float GGXL = NdotV * (NdotL * (1.0 - roughness2) + roughness2);
+
+	// float r2 = float(1.0 - roughness2);
+	// float GGXV = NdotL * fma(NdotV, r2, roughness2);
+	// float GGXL = NdotV * fma(NdotL, r2, roughness2);
 
 	float GGX = GGXV + GGXL;
 
@@ -154,24 +156,20 @@ float VisibilityOcclusionFast(float NdotL, float NdotV, float roughness2) {
 }
 float MicrofacetDistribution(float NdotH, float roughness4) {
 	float f = (NdotH * roughness4 - NdotH) * NdotH + 1.0;
+	// float f = fma(fma(NdotH, roughness4, NdotH), NdotH, 1.0);
 	return roughness4 / (/*PI */ f * f);
 }
 float ComputeSpecularAOFilament(float NdotV, float diffuseAO, float roughness2) {
-	return clamp(pow(NdotV + diffuseAO, exp2(-16.0 * roughness2 - 1.0)) - 1.0 + diffuseAO, 0.0, 1.0);
-	// return diffuseAO;
-}
-
-mat4 rotationMatrix(vec3 axis, float angle)
-{
-    axis = normalize(axis);
-    float s = sin(angle);
-    float c = cos(angle);
-    float oc = 1.0 - c;
-    
-    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
-                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
-                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
-                0.0,                                0.0,                                0.0,                                1.0);
+	return clamp(
+		pow(
+			NdotV + diffuseAO,
+			exp2(-16.0 * roughness2 - 1.0)
+			// exp2(fma(-16.0, roughness2, -1.0))
+		) - 1.0 + diffuseAO,
+		0.0,
+		1.0
+	);
+	return diffuseAO;
 }
 
 void main() {
@@ -190,14 +188,17 @@ void main() {
 		const float uv_scale = 1.0 / cascade_length[i];
 		const vec3 coords = vec3(uv*uv_scale, float(i));
 		const vec3 normal_scale = vec3(vec2(cascade_normal_scale[i]), 1.0);
+
 		#ifdef TEXTURE_FILTERING_BILINEAR
 			const vec4 bilinear = texture(normal_map, coords);
 			gradient += bilinear.xyw * normal_scale;
 		#endif
+
 		#ifdef TEXTURE_FILTERING_BICUBIC
 			const vec4 bicubic = texture_bicubic(normal_map, coords);
 			gradient += bicubic.xyw * normal_scale;
 		#endif
+
 		#ifdef TEXTURE_FILTERING_DEFAULT
 			const vec4 bilinear = texture(normal_map, coords);
 			const vec4 bicubic = texture_bicubic(normal_map, coords);
@@ -249,23 +250,8 @@ void main() {
 	const float NdotV = clamp(dot(N, V), EPSILON32, 1.0);
 	const float VdotH = clamp(dot(V, H), EPSILON32, 1.0);
 
-	// TODO fix subsurface scattering
-	// float VdotN = clamp(dot(V, N), 0.0, 1.0);
-	// float LdotnV = clamp(dot(L, -V), 0.0, 1.0);
-	// float LdotN = clamp(dot(L, N), 0.0, 1.0);
-	// float fresnel = 0.7;//ocean_waves_fresnel(VdotN, roughness, reflectance);
-	// float light_mask = smith_masking_shadowing(roughness, NdotV);
-	// float view_mask = smith_masking_shadowing(roughness, NdotL);
-	// const vec3 sss_modifier = subsurface_color.rgb; // vec3(0.9,1.15,0.85); // Subsurface scattering produces a 'greener' color.
-	// float sss_height = 1.0*max(0.0, IN.uv_wave_height.z - 2.5) * pow(LdotnV, 4.0) * pow(0.5 - 0.5 * LdotN, 3.0);
-	// float sss_near = 0.5*pow(NdotV, 2.0);
-	// float lambertian = 0.5*NdotL;
-	// vec3 sss_light = mix(
-	// 	(sss_height + sss_near) * sss_modifier / (1.0 + light_mask) + lambertian,
-	// 	foam_color.rgb,
-	// 	foam_factor
-	// ) * (1.0 - fresnel) * sunDiffuseModel.rgb;
-	// diffuse += sss_light;
+	const float VdotL = dot(V, L);
+	const float VdotnL = dot(-V, L);
 
 	const vec2 envBRDF = texture(brdfLUT, vec2(NdotV, roughness)).rg;
 	const vec3 energyCompensation = clamp(
@@ -303,6 +289,15 @@ void main() {
 		// https://google.github.io/filament/Filament.md.html#toc4.7.2
 		outSpecularColor *= energyCompensation;
 
+		const float MAX_WAVE_HEIGHT = 10.0;
+		const float SSS_MIN = 0.1;
+		const float SSS_SCALE = 0.2;
+
+		float wave_height_contribution = smoothstep(0, MAX_WAVE_HEIGHT, IN.uv_wave_height.z);
+		float displacement_factor = IN.uv_wave_height.w;
+		float sss_contribution = max(max(VdotL, VdotnL), SSS_MIN) * wave_height_contribution * SSS_SCALE * displacement_factor;
+		outSpecularColor += sss_contribution * subsurface_color.xyz;
+
 		// kS is equal to Fresnel
 		vec3 kS = F;
 
@@ -317,7 +312,7 @@ void main() {
 		kD *= 1.0 - METALNESS;
 
 		// add to outgoing radiance dirContrib
-		dirContrib  = maxSun * (kD * albedo /* PI */) * NdotL * shadowMult;
+		dirContrib  = maxSun * (kD * albedo /* PI */) * max(NdotL, 0.8) * shadowMult;
 		dirContrib += outSpecularColor;
 	}
 
@@ -337,7 +332,7 @@ void main() {
 		kD *= 1.0 - METALNESS;
 
 		iblDiffuse = sunAmbientModel.rgb;
-		const vec3 diffuse = iblDiffuse * albedo * diffuseAO;
+		const vec3 diffuse = iblDiffuse * albedo;// * diffuseAO;
 
 		// https://github.com/beyond-all-reason/RecoilEngine/blob/aed81b7cc721aa964f850ec9960af287f66bf98c/cont/base/springcontent/shaders/GLSL/BumpWaterFS.glsl#L24
 		vec3 reflectionColor = vec3(0.0);
@@ -354,6 +349,12 @@ void main() {
 			#ifdef REFLECTION_BLUR
 				const float v = REFLECTION_BLUR_BASE;
 				const float s = REFLECTION_BLUR_EXPONENT;
+				// const float s2 = s*s;
+				// const float s3 = s2*s;
+				// const float s4 = s3*s;
+				// const float s5 = s4*s;
+				// const float s6 = s5*s;
+				// const float s7 = s6*s;
 				reflectionColor += texture2D(reflection, reftexcoord + v).rgb;
 				reflectionColor += texture2D(reflection, reftexcoord + v *s).rgb;
 				reflectionColor += texture2D(reflection, reftexcoord + v *s*s).rgb;
@@ -369,13 +370,15 @@ void main() {
 		specular = reflectionColor * (F0 * envBRDF.x + F90 * envBRDF.y);
 		specular *= aoTermSpec * energyCompensation;
 
-		ambientContrib = (kD * diffuse + specular);
+		ambientContrib = fma(kD, diffuse, specular);
 	}
 	float alpha =
 		(1.0-foam_factor) * water_color.a +
 		foam_factor * foam_color.a;
 
-	vec3 color = ambientContrib.xyz + dirContrib.xyz;
+	vec3 color =
+		ambientContrib.xyz +
+		dirContrib.xyz;
 
 	#ifdef DEBUG_COLOR_CLIPMAP
 		uint ulayer = uint(IN.tile.w);

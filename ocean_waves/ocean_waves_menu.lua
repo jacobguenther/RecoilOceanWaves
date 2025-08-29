@@ -49,12 +49,16 @@ local squash_first_primitive_mode_update = true
 local chobbyInterface = false
 
 function widget:Initialize()
+	if not check_oceanwaves_available() then
+		return
+	end
+
 	context = RmlUi.GetContext("shared")
 
 	local data_model = {
 		reload_stylesheets = function() document:ReloadStyleSheet() end,
 
-		hidden_toggle = hidden_toggle,
+		on_exit = on_exit,
 
 		document_maximized = true,
 		minimize_toggle = minimize_toggle,
@@ -96,6 +100,7 @@ function widget:Initialize()
 		selected_cascade = 1,
 		cascades = WG['oceanwaves'].get_cascades(),
 		on_enable_cascade = on_enable_cascade,
+		on_cascade_parameter_change = on_cascade_parameter_change,
 		on_cascade_change_tile_size = on_cascade_change_tile_size,
 		on_cascade_change_displacement_scale = on_cascade_change_displacement_scale,
 		on_cascade_change_normal_scale = on_cascade_change_normal_scale,
@@ -131,8 +136,21 @@ function widget:Shutdown()
 	end
 end
 
+function check_oceanwaves_available()
+	local available = WG["oceanwaves"] ~= nil
+	if not available then
+		Spring.Echo("Ocean Waves not running. Closing menu.")
+		widgetHandler:RemoveWidget()
+	end
+	return available
+end
+
 -- FIXME move this to GameFrame
 function widget:Update(n)
+	if not check_oceanwaves_available() then
+		return
+	end
+
 	local wind_speed_x, _, wind_speed_z, wind_strength, wind_dir_x, _, wind_dir_z = GetWind()
 	local angle = deg(atan2(-wind_dir_x, wind_dir_z))
 	if angle < 0 then
@@ -188,15 +206,8 @@ function handle_invalid_number(element)
 	return nil
 end
 
-function hidden_toggle(event)
-	if not hidden then
-		document:Hide()
-		if event then
-			event.current_element:Blur()
-		end
-	else
-		document:Show()
-	end
+function on_exit(event)
+	widgetHandler:RemoveWidget()
 end
 function minimize_toggle()
 	dm.document_maximized = not dm.document_maximized
@@ -310,7 +321,7 @@ function on_override_gravity(event, gravity_value_id)
 	local value = validate_number(override_value_element)
 	if event.parameters.value == "on" then
 		if value then
-			WG["oceanwaves"].set_gravity(override)
+			WG["oceanwaves"].set_gravity(value)
 		end
 	else
 		WG["oceanwaves"].set_default_gravity()
@@ -338,70 +349,10 @@ function on_enable_cascade(event, cascade_id)
 	WG['oceanwaves'].toggle_cascade_enabled(cascade_id)
 end
 
-function on_cascade_change_tile_size(event, cascade_id)
+function on_cascade_parameter_change(event, cascade_id, api_func)
 	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_tile_length(cascade_id, value)
-	end
-end
-function on_cascade_change_displacement_scale(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_displacement_scale(cascade_id, value)
-	end
-end
-function on_cascade_change_normal_scale(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_normal_scale(cascade_id, value)
-	end
-end
-function on_cascade_change_wind_speed(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_wind_speed(cascade_id, value)
-	end
-end
-function on_cascade_change_wind_direction(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_wind_direction(cascade_id, value)
-	end
-end
-function on_cascade_change_fetch_length(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_fetch_length(cascade_id, value)
-	end
-end
-function on_cascade_change_swell(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_swell(cascade_id, value)
-	end
-end
-function on_cascade_change_spread(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_spread(cascade_id, value)
-	end
-end
-function on_cascade_change_detail(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_detail(cascade_id, value)
-	end
-end
-function on_cascade_change_whitecap(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_whitecap(cascade_id, value)
-	end
-end
-function on_cascade_change_foam_amount(event, cascade_id)
-	local value = validate_number(event.current_element)
-	if value then
-		WG['oceanwaves'].set_cascade_foam_amount(cascade_id, value)
+	if value and WG['oceanwaves'] then
+		WG['oceanwaves'][api_func](cascade_id, value)
 	end
 end
 
